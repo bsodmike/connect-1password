@@ -6,17 +6,16 @@ The library can be used by Rust applications, tools, and other automations to ac
 
 ## Early draft, please wait for initial release
 
-This is an early draft which is a work in progress.  I'm post this earlier so as to setup my crate
-online.  Please wait for a proper release, out in due course.
+This is an early draft and is a work in progress.  I've posted this earlier so as to setup my crate
+online.  Please wait for a proper release, which will be ready shortly; watch
+this space for further updates.
 
 ## Installation
 
 ## Usage
 
 1. Start by copying `.env-sample` to `.env`, making sure to update its values.
-2. Follow the [instructions to start
-   Connect](https://github.com/1Password/connect) and make sure the Docker
-   container starts at `http://localhost:8080`
+2. Follow the [instructions to start Connect](https://github.com/1Password/connect) and make sure the Docker container starts at `http://localhost:8080`
 3. Make sure to update `OP_API_TOKEN` in the `.env` file.
 
 #### Creating an API client
