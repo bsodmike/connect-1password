@@ -1,5 +1,6 @@
 use crate::{client::Client, vault::Vault};
 use chrono::{DateTime, Utc};
+use dotenv::dotenv;
 use serde::Deserialize;
 
 pub struct Connect {
@@ -13,6 +14,9 @@ impl Connect {
     pub fn new() -> Self {
         let token = std::env::var("OP_API_TOKEN").expect("1Password API token expected!");
         let host = std::env::var("OP_SERVER_URL").expect("1Password Connect server URL expected!");
+
+        // .env to override settings in ENV
+        dotenv().ok();
         let client = Client::new(&token, &host);
 
         Self {

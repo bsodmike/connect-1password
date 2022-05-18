@@ -1,6 +1,7 @@
 //! Error and Result module.
 
 use hyper::{header::InvalidHeaderValue, StatusCode};
+use regex::Regex;
 use std::{
     error::Error as StdError,
     fmt::{self, Display},
@@ -38,7 +39,7 @@ impl fmt::Display for Error {
         if let Some(ref cause) = self.inner.cause {
             write!(f, "{}: {}", self.description(), cause)
         } else {
-            f.write_str(self.description())
+            f.write_str(&self.description())
         }
     }
 }
@@ -89,6 +90,10 @@ impl Error {
         Error::new(Kind::RetryError).with(cause)
     }
 
+    pub(super) fn new_vault_error(err: VaultError) -> Self {
+        Error::new(Kind::VaultError(err))
+    }
+
     pub(super) fn new_internal_error() -> Self {
         Error::new(Kind::InternalError)
     }
@@ -98,19 +103,24 @@ impl Error {
         self.description()
     }
 
-    fn description(&self) -> &str {
-        match self.inner.kind {
-            Kind::HyperError(_) => "this is a Hyper related error!",
-            Kind::HyperHttpError(_) => "this is a Hyper HTTP related error!",
-            Kind::InternalError => "internal error",
-            Kind::InvalidHeaderValue => "invalid header value",
-            Kind::NetworkError => "network error",
-            Kind::NotImplementedError => "not implemented error",
-            Kind::ParsingError => "parsing error",
-            Kind::RetryError => "retry error",
-            Kind::RequestNotSuccessful(_) => "client returned an unsuccessful HTTP status code",
-            Kind::SerdeJsonError(_) => "serde deserialization error",
-            Kind::Utf8Error => "parsing bytes experienced a UTF8 error",
+    fn description(&self) -> String {
+        match &self.inner.kind {
+            Kind::HyperError(_) => "this is a Hyper related error!".to_string(),
+            Kind::HyperHttpError(_) => "this is a Hyper HTTP related error!".to_string(),
+            Kind::InternalError => "internal error".to_string(),
+            Kind::InvalidHeaderValue => "invalid header value".to_string(),
+            Kind::NetworkError => "network error".to_string(),
+            Kind::NotImplementedError => "not implemented error".to_string(),
+            Kind::ParsingError => "parsing error".to_string(),
+            Kind::RetryError => "retry error".to_string(),
+            Kind::RequestNotSuccessful(err) => {
+                format!("client returned an unsuccessful HTTP status code: {}", err)
+            }
+            Kind::SerdeJsonError(_) => "serde deserialization error".to_string(),
+            Kind::Utf8Error => "parsing bytes experienced a UTF8 error".to_string(),
+            Kind::VaultError(err) => {
+                format!("vault error: {}", err)
+            }
         }
     }
 }
@@ -118,9 +128,9 @@ impl Error {
 /// Wrapper type which contains a failed request's status code and body.
 #[derive(Debug)]
 pub struct RequestNotSuccessful {
-    /// Status code returned by the HTTP call to the Melissa API.
+    /// Status code returned by the HTTP call.
     pub status: StatusCode,
-    /// Body returned by the HTTP call to the Melissa API.
+    /// Body returned by the HTTP call.
     pub body: String,
 }
 
@@ -136,6 +146,30 @@ impl StdError for RequestNotSuccessful {}
 impl Display for RequestNotSuccessful {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "StatusCode: {}, Body: {}", self.status, self.body)
+    }
+}
+
+/// Wrapper type which contains Vault errors.
+#[derive(Debug)]
+pub struct VaultError {
+    /// Error message from the API.
+    pub message: String,
+    /// Status code returned by the HTTP call.
+    pub status: StatusCode,
+}
+
+impl VaultError {
+    /// Create a new unsuccessful request error.
+    pub fn new(status: StatusCode, message: String) -> Self {
+        Self { status, message }
+    }
+}
+
+impl StdError for VaultError {}
+
+impl Display for VaultError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "StatusCode: {}, Message: {}", self.status, self.message)
     }
 }
 
@@ -165,6 +199,8 @@ pub(super) enum Kind {
     SerdeJsonError(serde_json::Error),
 
     Utf8Error,
+
+    VaultError(VaultError),
 }
 
 impl fmt::Display for Kind {
@@ -202,6 +238,9 @@ impl fmt::Display for Kind {
             }
             Self::Utf8Error => {
                 write!(f, "Utf8Error")
+            }
+            &Self::VaultError(_) => {
+                write!(f, "VaultError")
             }
         }
     }
@@ -241,4 +280,43 @@ impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
         Error::new(Kind::SerdeJsonError(err))
     }
+}
+
+pub struct OPError {
+    pub(super) status_code: Option<u16>,
+    pub(super) captures: Option<Vec<String>>,
+}
+
+/// Handle errors for the Vault API
+pub fn process_vault_error(err_message: String) -> Result<OPError, Error> {
+    let input_re = Regex::new(r#"(StatusCode):\s+(\d+)"#).unwrap();
+
+    // Execute the Regex
+    let captures = input_re.captures(&err_message).map(|captures| {
+        captures
+            .iter() // All the captured groups
+            .skip(1) // Skipping the complete match
+            .flat_map(|c| c) // Ignoring all empty optional matches
+            .map(|c| c.as_str()) // Grab the original strings
+            .collect::<Vec<_>>() // Create a vector
+    });
+
+    dbg!(&captures);
+
+    // Match against the captured values as a slice
+    let status_code: Option<u16> = match captures.as_ref().map(|c| c.as_slice()) {
+        Some(["StatusCode", x]) => {
+            let x = x.parse().expect("can't parse number");
+            Some(x)
+        }
+        _ => None,
+    };
+
+    let return_captures: Option<Vec<String>> =
+        captures.map(|b| b.into_iter().map(|c| c.to_owned()).collect::<Vec<_>>());
+
+    Ok(OPError {
+        status_code,
+        captures: return_captures,
+    })
 }
