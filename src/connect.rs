@@ -1,7 +1,7 @@
+//! Connect API
+
 use crate::{client::Client, vault::Vault};
-use chrono::{DateTime, Utc};
 use dotenv::dotenv;
-use serde::Deserialize;
 
 pub struct Connect {
     server_url: String,

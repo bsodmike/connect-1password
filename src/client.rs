@@ -1,8 +1,10 @@
+//! HTTP Client
+
 use crate::error::{Error, RequestNotSuccessful};
 use exponential_backoff::Backoff;
 use hyper::{
     client::connect::HttpConnector, header::HeaderValue, Body, Client as HyperClient, Method,
-    Request, Response, StatusCode,
+    Response, StatusCode,
 };
 use hyper_rustls::HttpsConnector;
 use log::{debug, error};

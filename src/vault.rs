@@ -1,3 +1,5 @@
+//! Vault
+
 use crate::{
     client::Client,
     error::{Error, VaultError},
@@ -10,13 +12,13 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct VaultData {
-    pub(super) id: String,
-    pub(super) name: String,
-    pub(super) content_version: u32,
-    pub(super) attribute_version: u32,
-    pub(super) r#type: String,
-    pub(super) created_at: Option<DateTime<Utc>>,
-    pub(super) updated_at: Option<DateTime<Utc>>,
+    pub id: String,
+    pub name: String,
+    pub content_version: u32,
+    pub attribute_version: u32,
+    pub r#type: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 pub struct Vault {
@@ -24,11 +26,11 @@ pub struct Vault {
 }
 
 impl Vault {
-    pub(super) fn new(client: Client) -> Self {
+    pub fn new(client: Client) -> Self {
         Self { client }
     }
 
-    pub(super) async fn get_vaults(
+    pub async fn get_vaults(
         &self,
     ) -> Result<(Vec<VaultData>, serde_json::Value), crate::error::Error> {
         let params = vec![("", "")];
@@ -61,7 +63,7 @@ impl Vault {
         Ok(result)
     }
 
-    pub(super) async fn get_vault(
+    pub async fn get_vault(
         &self,
         id: &str,
     ) -> Result<(VaultData, serde_json::Value), crate::error::Error> {

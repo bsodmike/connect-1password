@@ -13,10 +13,16 @@ online.  Please wait for a proper release, out in due course.
 
 ## Usage
 
+1. Start by copying `.env-sample` to `.env`, making sure to update its values.
+2. Follow the [instructions to start
+   Connect](https://github.com/1Password/connect) and make sure the Docker
+   container starts at `http://localhost:8080`
+3. Make sure to update `OP_API_TOKEN` in the `.env` file.
+
 #### Creating an API client
 
 ```rust
-use connect::Connect;
+use connect_1password::connect::Connect;
 
 let connect = Connect::new();
 ```
@@ -27,6 +33,8 @@ let connect = Connect::new();
 // Get all vaults
 let (vaults, _) = connect.vault().get_vaults().await?;
 ```
+
+Refer to the [docs](https://docs.rs/connect-1password/0.1.0/connect_1password/) for further examples.
 
 ### HTTPClient
 
