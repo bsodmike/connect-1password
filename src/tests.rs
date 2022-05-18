@@ -6,8 +6,8 @@ use crate::vault::Vault;
 async fn get_vaults() {
     let connect = Connect::new();
 
-    let (response, _) = connect.vault().get_vaults().await.unwrap();
-    dbg!(&response);
+    let (vaults, _) = connect.vault().get_vaults().await.unwrap();
+    dbg!(&vaults);
 
-    assert_eq!(response[0].name, "Automated".to_string());
+    assert_eq!(vaults[0].name, "Automated".to_string());
 }
