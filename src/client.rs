@@ -15,12 +15,12 @@ pub const PUT: Method = Method::PUT;
 
 pub struct Client {
     api_key: String,
-    host_uri: String,
+    server_url: String,
     https_client: HyperClient<HttpsConnector<HttpConnector>>,
 }
 
 impl Client {
-    pub fn new(api_key: String, host_uri: String) -> Self {
+    pub fn new(token: &str, server_url: &str) -> Self {
         let https = hyper_rustls::HttpsConnectorBuilder::new()
             .with_native_roots()
             .https_or_http()
@@ -29,8 +29,8 @@ impl Client {
             .build();
 
         Self {
-            api_key,
-            host_uri,
+            api_key: token.to_string(),
+            server_url: server_url.to_string(),
             https_client: hyper::Client::builder().build::<_, hyper::Body>(https),
         }
     }
@@ -128,12 +128,7 @@ async fn retry_with_backoff(
     let mut retry_errors = vec![];
 
     for duration in &backoff {
-        let url = format!(
-            "http://{}/{}?{}",
-            client.host_uri,
-            endpoint,
-            url_encode(params)
-        );
+        let url = format!("{}/{}?{}", client.server_url, endpoint, url_encode(params));
 
         let mut req = hyper::Request::builder()
             .method(method)
