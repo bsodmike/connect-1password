@@ -9,14 +9,15 @@ use log::{debug, error};
 use serde_json::Value;
 use std::{fmt, ops, thread, time::Duration};
 
-const GET: Method = Method::GET;
-const POST: Method = Method::POST;
-const PUT: Method = Method::PUT;
+pub const GET: Method = Method::GET;
+pub const POST: Method = Method::POST;
+pub const PUT: Method = Method::PUT;
 
 pub struct Client {
     api_key: String,
     host_uri: String,
-    http_client: HyperClient<HttpsConnector<HttpConnector>>,
+    https_client: HyperClient<HttpsConnector<HttpConnector>>,
+    http_client: HyperClient<HttpConnector<hyper::client::connect::dns::GaiResolver>>,
 }
 
 impl Client {
@@ -30,7 +31,10 @@ impl Client {
         Self {
             api_key,
             host_uri,
-            http_client: hyper::Client::builder().build::<_, hyper::Body>(https),
+            https_client: hyper::Client::builder().build::<_, hyper::Body>(https),
+            http_client: hyper::Client::builder()
+                .pool_idle_timeout(Duration::from_secs(30))
+                .build_http(),
         }
     }
 
@@ -116,7 +120,7 @@ async fn retry_with_backoff(
     client: &Client,
     method: &hyper::Method,
     api_key: &str,
-    _endpoint: &str,
+    endpoint: &str,
     params: &[(&str, &str)],
 ) -> Result<Response<Body>, Error> {
     let retries = 1;
@@ -127,7 +131,12 @@ async fn retry_with_backoff(
     let mut retry_errors = vec![];
 
     for duration in &backoff {
-        let url = format!("https://{}?{}", client.host_uri, url_encode(params));
+        let url = format!(
+            "http://{}/{}?{}",
+            client.host_uri,
+            endpoint,
+            url_encode(params)
+        );
 
         let mut req = hyper::Request::builder()
             .method(method)
