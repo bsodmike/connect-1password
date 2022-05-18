@@ -1,4 +1,4 @@
-use crate::error::{ConnectResult, Error, RequestNotSuccessful};
+use crate::error::{Error, RequestNotSuccessful};
 use exponential_backoff::Backoff;
 use hyper::{
     client::connect::HttpConnector, header::HeaderValue, Body, Client as HyperClient, Method,
@@ -15,11 +15,12 @@ const PUT: Method = Method::PUT;
 
 pub struct Client {
     api_key: String,
+    host_uri: String,
     http_client: HyperClient<HttpsConnector<HttpConnector>>,
 }
 
 impl Client {
-    pub fn new(api_key: String) -> Self {
+    pub fn new(api_key: String, host_uri: String) -> Self {
         let https = hyper_rustls::HttpsConnectorBuilder::new()
             .with_native_roots()
             .https_only()
@@ -28,6 +29,7 @@ impl Client {
 
         Self {
             api_key,
+            host_uri,
             http_client: hyper::Client::builder().build::<_, hyper::Body>(https),
         }
     }
@@ -113,7 +115,7 @@ impl ops::Deref for RetryErrors<'_> {
 async fn retry_with_backoff(
     client: &Client,
     method: &hyper::Method,
-    _api_key: &str,
+    api_key: &str,
     _endpoint: &str,
     params: &[(&str, &str)],
 ) -> Result<Response<Body>, Error> {
@@ -125,15 +127,18 @@ async fn retry_with_backoff(
     let mut retry_errors = vec![];
 
     for duration in &backoff {
-        let url = format!("https://foo?{}", url_encode(params));
+        let url = format!("https://{}?{}", client.host_uri, url_encode(params));
 
         let mut req = hyper::Request::builder()
             .method(method)
             .uri(&*url)
             .body(Body::empty())?;
 
+        let auth = String::from("Bearer ") + api_key;
         req.headers_mut()
             .insert("Accept", HeaderValue::from_str("application/json")?);
+        req.headers_mut()
+            .insert("Authorization", HeaderValue::from_str(&auth)?);
 
         match client.http_client.request(req).await {
             Ok(value) => return Ok(value),
