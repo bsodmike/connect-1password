@@ -17,24 +17,21 @@ pub struct Client {
     api_key: String,
     host_uri: String,
     https_client: HyperClient<HttpsConnector<HttpConnector>>,
-    http_client: HyperClient<HttpConnector<hyper::client::connect::dns::GaiResolver>>,
 }
 
 impl Client {
     pub fn new(api_key: String, host_uri: String) -> Self {
         let https = hyper_rustls::HttpsConnectorBuilder::new()
             .with_native_roots()
-            .https_only()
+            .https_or_http()
             .enable_http1()
+            .enable_http2()
             .build();
 
         Self {
             api_key,
             host_uri,
             https_client: hyper::Client::builder().build::<_, hyper::Body>(https),
-            http_client: hyper::Client::builder()
-                .pool_idle_timeout(Duration::from_secs(30))
-                .build_http(),
         }
     }
 
@@ -149,7 +146,7 @@ async fn retry_with_backoff(
         req.headers_mut()
             .insert("Authorization", HeaderValue::from_str(&auth)?);
 
-        match client.http_client.request(req).await {
+        match client.https_client.request(req).await {
             Ok(value) => return Ok(value),
             Err(err) => {
                 let error_message = format!("[ Retrying ]: Client error: {}", err);
