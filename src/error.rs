@@ -90,8 +90,8 @@ impl Error {
         Error::new(Kind::RetryError).with(cause)
     }
 
-    pub(super) fn new_vault_error(err: VaultError) -> Self {
-        Error::new(Kind::VaultError(err))
+    pub(super) fn new_connect_error(err: ConnectAPIError) -> Self {
+        Error::new(Kind::ConnectAPIError(err))
     }
 
     pub(super) fn new_internal_error() -> Self {
@@ -118,7 +118,7 @@ impl Error {
             }
             Kind::SerdeJsonError(_) => "serde deserialization error".to_string(),
             Kind::Utf8Error => "parsing bytes experienced a UTF8 error".to_string(),
-            Kind::VaultError(err) => {
+            Kind::ConnectAPIError(err) => {
                 format!("vault error: {}", err)
             }
         }
@@ -151,23 +151,23 @@ impl Display for RequestNotSuccessful {
 
 /// Wrapper type which contains Vault errors.
 #[derive(Debug)]
-pub struct VaultError {
+pub struct ConnectAPIError {
     /// Error message from the API.
     pub message: String,
     /// Status code returned by the HTTP call.
     pub status: StatusCode,
 }
 
-impl VaultError {
+impl ConnectAPIError {
     /// Create a new unsuccessful request error.
     pub fn new(status: StatusCode, message: String) -> Self {
         Self { status, message }
     }
 }
 
-impl StdError for VaultError {}
+impl StdError for ConnectAPIError {}
 
-impl Display for VaultError {
+impl Display for ConnectAPIError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "StatusCode: {}, Message: {}", self.status, self.message)
     }
@@ -200,7 +200,7 @@ pub(super) enum Kind {
 
     Utf8Error,
 
-    VaultError(VaultError),
+    ConnectAPIError(ConnectAPIError),
 }
 
 impl fmt::Display for Kind {
@@ -239,8 +239,8 @@ impl fmt::Display for Kind {
             Self::Utf8Error => {
                 write!(f, "Utf8Error")
             }
-            &Self::VaultError(_) => {
-                write!(f, "VaultError")
+            &Self::ConnectAPIError(_) => {
+                write!(f, "ConnectAPIError")
             }
         }
     }
@@ -287,8 +287,8 @@ pub struct OPError {
     pub(super) captures: Option<Vec<String>>,
 }
 
-/// Handle errors for the Vault API
-pub fn process_vault_error(err_message: String) -> Result<OPError, Error> {
+/// Handle Connect API error response
+pub fn process_connect_error_response(err_message: String) -> Result<OPError, Error> {
     let input_re = Regex::new(r#"(StatusCode):\s+(\d+)"#).unwrap();
 
     // Execute the Regex

@@ -2,7 +2,7 @@
 
 use crate::{
     client::Client,
-    error::{Error, VaultError},
+    error::{ConnectAPIError, Error},
 };
 use chrono::{DateTime, Utc};
 use hyper::StatusCode;
@@ -51,7 +51,7 @@ impl Vault {
         {
             Ok(value) => value,
             Err(err) => {
-                let op_error = crate::error::process_vault_error(err.to_string())?;
+                let op_error = crate::error::process_connect_error_response(err.to_string())?;
 
                 let message = "Invalid bearer token";
                 if err.to_string().contains(message) {
@@ -59,7 +59,7 @@ impl Vault {
                         status: op_error.status_code.unwrap_or_default(),
                     };
 
-                    return Err(Error::new_vault_error(VaultError::new(
+                    return Err(Error::new_connect_error(ConnectAPIError::new(
                         status.into(),
                         message.to_string(),
                     )));
@@ -86,7 +86,7 @@ impl Vault {
         {
             Ok(value) => value,
             Err(err) => {
-                let op_error = crate::error::process_vault_error(err.to_string())?;
+                let op_error = crate::error::process_connect_error_response(err.to_string())?;
 
                 let mut message = "Invalid bearer token";
                 if err.to_string().contains(message) {
@@ -94,7 +94,7 @@ impl Vault {
                         status: op_error.status_code.unwrap_or_default(),
                     };
 
-                    return Err(Error::new_vault_error(VaultError::new(
+                    return Err(Error::new_connect_error(ConnectAPIError::new(
                         status.into(),
                         message.to_string(),
                     )));
@@ -106,7 +106,7 @@ impl Vault {
                         status: op_error.status_code.unwrap_or_default(),
                     };
 
-                    return Err(Error::new_vault_error(VaultError::new(
+                    return Err(Error::new_connect_error(ConnectAPIError::new(
                         status.into(),
                         message.to_string(),
                     )));
@@ -181,7 +181,7 @@ impl Item {
         {
             Ok(value) => value,
             Err(err) => {
-                let op_error = crate::error::process_vault_error(err.to_string())?;
+                let op_error = crate::error::process_connect_error_response(err.to_string())?;
 
                 let message = "Invalid bearer token";
                 if err.to_string().contains(message) {
@@ -189,7 +189,7 @@ impl Item {
                         status: op_error.status_code.unwrap_or_default(),
                     };
 
-                    return Err(Error::new_vault_error(VaultError::new(
+                    return Err(Error::new_connect_error(ConnectAPIError::new(
                         status.into(),
                         message.to_string(),
                     )));
