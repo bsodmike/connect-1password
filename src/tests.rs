@@ -1,7 +1,7 @@
 use crate::client::Client;
 use crate::connect::Connect;
 use crate::error::Error;
-use crate::models::Vault;
+use crate::models::{FullItem, LoginItem, LoginItemBuilder, Vault};
 
 // List vaults
 // https://developer.1password.com/docs/connect/connect-api-reference#list-vaults
@@ -61,5 +61,26 @@ async fn list_items() {
     let (items, _) = connect.item().get_list(&test_vault_id).await.unwrap();
     dbg!(&items);
 
-    assert!(items.is_empty());
+    assert!(!items.is_empty());
+}
+
+// Add an item
+
+// ItemBuilder
+#[tokio::test]
+async fn login_item_builder() {
+    let test_vault_id =
+        std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+    let connect = Connect::new();
+
+    let mut builder = LoginItemBuilder::new(&test_vault_id);
+    builder.username(&"Bob".to_string());
+    builder.password(&"".to_string());
+
+    let item: FullItem = builder.build();
+
+    let (new_item, _) = connect.item().add(&test_vault_id, item).await.unwrap();
+    dbg!(&new_item);
+
+    assert_ne!(new_item.id, "foo");
 }

@@ -46,13 +46,14 @@ impl Client {
         method: hyper::Method,
         endpoint: &str,
         params: &[(&str, &str)],
+        body: Option<String>,
     ) -> Result<(T, Value), Error>
     where
         T: serde::de::DeserializeOwned + std::fmt::Debug,
     {
         let api_key: &String = &self.api_key;
 
-        let resp = retry_with_backoff(self, &method, &api_key[..], endpoint, params).await?;
+        let resp = retry_with_backoff(self, &method, &api_key[..], endpoint, params, body).await?;
         let status = resp.status();
 
         let data: (Result<T, Error>, Value) = hyper::body::to_bytes(resp.into_body())
@@ -121,6 +122,7 @@ async fn retry_with_backoff(
     api_key: &str,
     endpoint: &str,
     params: &[(&str, &str)],
+    body: Option<String>,
 ) -> Result<Response<Body>, Error> {
     let retries = 1;
     let min = Duration::from_millis(100);
@@ -132,10 +134,14 @@ async fn retry_with_backoff(
     for duration in &backoff {
         let url = format!("{}/{}?{}", client.server_url, endpoint, url_encode(params));
 
+        let body_data = match body {
+            Some(ref value) => Body::from(value.clone()),
+            None => Body::empty(),
+        };
         let mut req = hyper::Request::builder()
             .method(method)
             .uri(&*url)
-            .body(Body::empty())?;
+            .body(body_data)?;
 
         let auth = String::from("Bearer ") + api_key;
         req.headers_mut()
