@@ -78,8 +78,7 @@ async fn login_item_builder() {
     builder.password(&"".to_string());
 
     let item: FullItem = builder.build();
-
-    let (new_item, _) = connect.item().add(&test_vault_id, item).await.unwrap();
+    let (new_item, _) = connect.item().add(item).await.unwrap();
     dbg!(&new_item);
 
     assert_ne!(new_item.id, "foo");

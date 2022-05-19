@@ -215,9 +215,10 @@ impl Item {
 
     pub async fn add(
         &self,
-        id: &str,
         item: FullItem,
     ) -> Result<(ItemData, serde_json::Value), crate::error::Error> {
+        let id = &item.vault.id;
+
         let params = vec![("", "")];
         let path = format!("v1/vaults/{}/items", id);
 
