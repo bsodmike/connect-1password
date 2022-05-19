@@ -1,4 +1,4 @@
-//! Vault
+//! Models
 
 use crate::{
     client::Client,
@@ -39,7 +39,7 @@ impl Vault {
         Self { client }
     }
 
-    pub async fn get_vaults(
+    pub async fn get_list(
         &self,
     ) -> Result<(Vec<VaultData>, serde_json::Value), crate::error::Error> {
         let params = vec![("", "")];
@@ -72,7 +72,7 @@ impl Vault {
         Ok(result)
     }
 
-    pub async fn get_vault(
+    pub async fn get_details(
         &self,
         id: &str,
     ) -> Result<(VaultData, serde_json::Value), crate::error::Error> {
@@ -127,5 +127,43 @@ struct VaultStatus {
 impl Into<StatusCode> for VaultStatus {
     fn into(self) -> StatusCode {
         StatusCode::try_from(self.status).unwrap()
+    }
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct ItemData {
+    /// The UUID of the item.
+    pub id: String,
+    /// The title of the item.
+    pub title: String,
+    /// An object containing an id property whose value is the UUID of the vault the item is in.
+    pub vault: VaultID,
+    /// The category of the item.
+    pub category: Option<String>,
+    /// Whether the item is marked as a favourite.
+    pub favorite: bool,
+    /// A vector of strings of the tags assigned to the item.
+    pub tags: Option<Vec<String>>,
+    /// The state of the item.
+    pub state: Option<String>,
+    /// Date and time when the vault was created.
+    pub created_at: Option<DateTime<Utc>>,
+    /// Date and time when the vault or its contents were last changed.
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct VaultID {
+    /// The UUID of the vault.
+    pub id: String,
+}
+
+pub struct Item {
+    client: Client,
+}
+
+impl Item {
+    pub fn new(client: Client) -> Self {
+        Self { client }
     }
 }

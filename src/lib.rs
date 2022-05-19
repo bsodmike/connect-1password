@@ -13,7 +13,7 @@
 pub mod client;
 pub mod connect;
 pub mod error;
-pub mod vault;
+pub mod models;
 
 #[cfg(test)]
 mod tests;

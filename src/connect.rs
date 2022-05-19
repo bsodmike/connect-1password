@@ -1,6 +1,9 @@
 //! Connect API
 
-use crate::{client::Client, vault::Vault};
+use crate::{
+    client::Client,
+    models::{Item, Vault},
+};
 use dotenv::dotenv;
 
 pub struct Connect {
@@ -8,6 +11,7 @@ pub struct Connect {
     token: String,
     client: Client,
     vault: Vault,
+    item: Item,
 }
 
 impl Connect {
@@ -24,6 +28,7 @@ impl Connect {
             token: token.clone(),
             client,
             vault: Vault::new(Client::new(&token, &host)),
+            item: Item::new(Client::new(&token, &host)),
         }
     }
 
@@ -33,5 +38,9 @@ impl Connect {
 
     pub fn vault(&self) -> &Vault {
         &self.vault
+    }
+
+    pub fn item(&self) -> &Item {
+        &self.item
     }
 }
