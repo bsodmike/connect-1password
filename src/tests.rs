@@ -73,11 +73,10 @@ async fn login_item_builder() {
         std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
     let connect = Connect::new();
 
-    let mut builder = LoginItemBuilder::new(&test_vault_id);
-    builder.username(&"Bob".to_string());
-    builder.password(&"".to_string());
-
-    let item: FullItem = builder.build();
+    let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+        .username(&"Bob".to_string())
+        .password(&"".to_string())
+        .build();
     let (new_item, _) = connect.item().add(item).await.unwrap();
     dbg!(&new_item);
 

@@ -30,11 +30,11 @@ let connect = Connect::new();
 let (vaults, _) = connect.vault().get_list().await?;
 
 // Add a login item
-let mut builder = LoginItemBuilder::new("vaultUUID");
-builder.username(&"Bob".to_string());
-builder.password(&"".to_string());
+let item: FullItem = LoginItemBuilder::new("vaultUUID")
+    .username(&"Bob".to_string())
+    .password(&"".to_string())
+    .build();
 
-let item: FullItem = builder.build();
 let (new_item, _) = connect.item().add(item).await?;
 
 // new_item = ItemData {
