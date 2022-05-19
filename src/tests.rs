@@ -48,3 +48,18 @@ async fn get_vault_details_invalid_vault() {
 
     let (_vault, _) = connect.vault().get_details("foo").await.unwrap();
 }
+
+// List items
+// https://developer.1password.com/docs/connect/connect-api-reference#list-items
+
+#[tokio::test]
+async fn list_items() {
+    let test_vault_id =
+        std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+    let connect = Connect::new();
+
+    let (items, _) = connect.item().get_list(&test_vault_id).await.unwrap();
+    dbg!(&items);
+
+    assert!(items.is_empty());
+}

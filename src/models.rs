@@ -166,4 +166,39 @@ impl Item {
     pub fn new(client: Client) -> Self {
         Self { client }
     }
+
+    pub async fn get_list(
+        &self,
+        id: &str,
+    ) -> Result<(Vec<ItemData>, serde_json::Value), crate::error::Error> {
+        let params = vec![("", "")];
+        let path = format!("v1/vaults/{}/items", id);
+
+        let result = match self
+            .client
+            .send_request::<Vec<ItemData>>(crate::client::GET, &path, &params)
+            .await
+        {
+            Ok(value) => value,
+            Err(err) => {
+                let op_error = crate::error::process_vault_error(err.to_string())?;
+
+                let message = "Invalid bearer token";
+                if err.to_string().contains(message) {
+                    let status = VaultStatus {
+                        status: op_error.status_code.unwrap_or_default(),
+                    };
+
+                    return Err(Error::new_vault_error(VaultError::new(
+                        status.into(),
+                        message.to_string(),
+                    )));
+                }
+
+                return Err(Error::new_internal_error().with(err));
+            }
+        };
+
+        Ok(result)
+    }
 }
