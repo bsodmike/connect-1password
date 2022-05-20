@@ -2,7 +2,8 @@
 
 use crate::{
     client::Client,
-    models::{Item, Vault},
+    error::Error,
+    models::{Item, Vault, VaultData},
 };
 use dotenv::dotenv;
 
@@ -32,15 +33,21 @@ impl Connect {
         }
     }
 
-    pub fn client(&self) -> &Client {
+    pub(crate) fn client(&self) -> &Client {
         &self.client
     }
 
-    pub fn vault(&self) -> &Vault {
+    pub(crate) fn vault(&self) -> &Vault {
         &self.vault
     }
 
-    pub fn item(&self) -> &Item {
+    pub(crate) fn item(&self) -> &Item {
         &self.item
+    }
+
+    pub async fn list_vaults(&self) -> Result<(Vec<VaultData>, serde_json::Value), Error> {
+        let result = self.vault.get_list().await?;
+
+        Ok(result)
     }
 }
