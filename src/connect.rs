@@ -3,7 +3,7 @@
 use crate::{
     client::Client,
     error::Error,
-    models::{Item, Vault, VaultData},
+    models::{FullItem, Item, ItemData, Vault, VaultData},
 };
 use dotenv::dotenv;
 
@@ -16,6 +16,7 @@ pub struct Connect {
 }
 
 impl Connect {
+    /// Create a new instance.
     pub fn new() -> Self {
         let token = std::env::var("OP_API_TOKEN").expect("1Password API token expected!");
         let host = std::env::var("OP_SERVER_URL").expect("1Password Connect server URL expected!");
@@ -45,8 +46,30 @@ impl Connect {
         &self.item
     }
 
+    /// List vaults
     pub async fn list_vaults(&self) -> Result<(Vec<VaultData>, serde_json::Value), Error> {
         let result = self.vault.get_list().await?;
+
+        Ok(result)
+    }
+
+    /// Get vault details
+    pub async fn get_vault(&self, id: &str) -> Result<(VaultData, serde_json::Value), Error> {
+        let result = self.vault.get_details(id).await?;
+
+        Ok(result)
+    }
+
+    /// List items
+    pub async fn list_items(&self, id: &str) -> Result<(Vec<ItemData>, serde_json::Value), Error> {
+        let result = self.item.get_list(id).await?;
+
+        Ok(result)
+    }
+
+    /// Add an item
+    pub async fn add_item(&self, item: FullItem) -> Result<(ItemData, serde_json::Value), Error> {
+        let result = self.item.add(item).await?;
 
         Ok(result)
     }
