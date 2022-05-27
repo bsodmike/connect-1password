@@ -10,9 +10,9 @@ use std::{
 };
 
 /// A simple type alias so as to DRY.
-pub(crate) type ConnectResult<T> = Result<T, Error>;
+pub type ConnectResult<T> = Result<T, Error>;
 
-pub(crate) type Cause = Box<dyn StdError + Send + Sync>;
+pub type Cause = Box<dyn StdError + Send + Sync>;
 
 pub struct Error {
     inner: Box<ErrorImpl>,
@@ -151,16 +151,16 @@ impl Display for RequestNotSuccessful {
 
 /// Wrapper type which contains Vault errors.
 #[derive(Debug)]
-pub(crate) struct ConnectAPIError {
+pub struct ConnectAPIError {
     /// Error message from the API.
-    pub(crate) message: String,
+    pub message: String,
     /// Status code returned by the HTTP call.
-    pub(crate) status: StatusCode,
+    pub status: StatusCode,
 }
 
 impl ConnectAPIError {
     /// Create a new unsuccessful request error.
-    pub(crate) fn new(status: StatusCode, message: String) -> Self {
+    pub fn new(status: StatusCode, message: String) -> Self {
         Self { status, message }
     }
 }
@@ -282,13 +282,13 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-pub(crate) struct OPError {
+pub struct OPError {
     pub(super) status_code: Option<u16>,
     pub(super) captures: Option<Vec<String>>,
 }
 
 /// Handle Connect API error response
-pub(crate) fn process_connect_error_response(err_message: String) -> Result<OPError, Error> {
+pub fn process_connect_error_response(err_message: String) -> Result<OPError, Error> {
     let input_re = Regex::new(r#"(StatusCode):\s+(\d+)"#).unwrap();
 
     // Execute the Regex

@@ -10,9 +10,8 @@
 //!
 //! - Based on tokio, hyper and hyper_rustls
 
-mod error;
-
 pub mod client;
+pub mod error;
 pub mod items;
 pub mod models;
 pub mod vaults;
