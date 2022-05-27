@@ -1,4 +1,3 @@
-use crate::{client::Client, error::Error};
 use chrono::{DateTime, Utc};
 use hyper::StatusCode;
 use log::debug;
