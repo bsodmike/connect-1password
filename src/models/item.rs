@@ -1,3 +1,4 @@
+use crate::error::{CustomError, Error};
 use chrono::{DateTime, Utc};
 use hyper::StatusCode;
 use log::debug;
@@ -88,7 +89,7 @@ pub struct ItemSection {}
 #[derive(Debug, Serialize)]
 pub struct FullItem {
     /// The title of the item.
-    pub title: Option<String>,
+    pub title: String,
     /// An object containing an id property whose value is the UUID of the vault the item is in.
     pub vault: VaultID,
     /// The category of the item.
@@ -113,7 +114,7 @@ pub trait LoginItem {
 #[derive(Debug)]
 pub struct LoginItemBuilder {
     /// The title of the item.
-    pub title: Option<String>,
+    pub title: String,
     /// An object containing an id property whose value is the UUID of the vault the item is in.
     pub vault: VaultID,
     /// The category of the item.
@@ -138,7 +139,7 @@ impl LoginItemBuilder {
 
         Self {
             vault,
-            title: None,
+            title: String::default(),
             category: Some("LOGIN".to_string()),
             favorite: false,
             urls: None,
@@ -148,17 +149,21 @@ impl LoginItemBuilder {
         }
     }
 
-    pub fn build(&self) -> FullItem {
-        FullItem {
+    pub fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
+        if self.title.is_empty() {
+            return Err(Box::new(CustomError::new("Title is required")));
+        }
+
+        Ok(FullItem {
+            title: self.title.clone(),
             category: self.category.clone(),
             favorite: self.favorite,
             fields: self.fields.clone(),
             sections: self.sections.clone(),
             tags: self.tags.clone(),
-            title: self.title.clone(),
             urls: self.urls.clone(),
             vault: self.vault.clone(),
-        }
+        })
     }
 }
 

@@ -107,7 +107,8 @@ mod test {
         let item: FullItem = LoginItemBuilder::new(&test_vault_id)
             .username(&"Bob".to_string())
             .password(&"".to_string())
-            .build();
+            .build()
+            .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 

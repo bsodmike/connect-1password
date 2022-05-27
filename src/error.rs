@@ -118,8 +118,11 @@ impl Error {
             }
             Kind::SerdeJsonError(_) => "serde deserialization error".to_string(),
             Kind::Utf8Error => "parsing bytes experienced a UTF8 error".to_string(),
+            Kind::CustomError(err) => {
+                format!("Error: {}", err)
+            }
             Kind::ConnectAPIError(err) => {
-                format!("vault error: {}", err)
+                format!("Connect API error: {}", err)
             }
         }
     }
@@ -173,8 +176,34 @@ impl Display for ConnectAPIError {
     }
 }
 
+/// Wrapper type for custom errors.
+#[derive(Debug)]
+pub struct CustomError {
+    /// Error message.
+    pub message: String,
+}
+
+impl CustomError {
+    /// Create a new custom error.
+    pub fn new(message: &str) -> Self {
+        Self {
+            message: message.to_string(),
+        }
+    }
+}
+
+impl StdError for CustomError {}
+
+impl Display for CustomError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Message: {}", self.message)
+    }
+}
+
 #[derive(Debug)]
 pub(super) enum Kind {
+    CustomError(CustomError),
+
     /// The failure was due to a Hyper error
     HyperError(hyper::Error),
 
@@ -241,6 +270,9 @@ impl fmt::Display for Kind {
             }
             &Self::ConnectAPIError(_) => {
                 write!(f, "ConnectAPIError")
+            }
+            &Self::CustomError(_) => {
+                write!(f, "CustomError")
             }
         }
     }
