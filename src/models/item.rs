@@ -107,6 +107,7 @@ pub struct FullItem {
 }
 
 pub trait LoginItem {
+    fn title(self, username: &str) -> Self;
     fn username(self, username: &str) -> Self;
     fn password(self, password: &str) -> Self;
 }
@@ -168,6 +169,11 @@ impl LoginItemBuilder {
 }
 
 impl LoginItem for LoginItemBuilder {
+    fn title(mut self, title: &str) -> Self {
+        self.title = title.to_string();
+        self
+    }
+
     fn username(mut self, username: &str) -> Self {
         let field: ItemField = ItemField {
             value: Some(username.to_string()),
@@ -181,6 +187,7 @@ impl LoginItem for LoginItemBuilder {
         self.fields.push(field);
         self
     }
+
     fn password(mut self, password: &str) -> Self {
         let field: ItemField = ItemField {
             value: if password.is_empty() {
