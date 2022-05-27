@@ -22,12 +22,18 @@ this space for further updates.
 #### Basic API usage
 
 ```rust
-use connect_1password::connect::Connect;
+use connect_1password::{
+    client::Client,
+    models::{
+        item::*,
+        *,
+    },
+};
 
-let connect = Connect::new();
+let client = Client::default();
 
 // List vaults
-let (vaults, _) = connect.vault().get_list().await?;
+let (vaults, _) = vaults::all(&client).await?;
 
 // Add a login item
 let item: FullItem = LoginItemBuilder::new("vaultUUID")
@@ -35,7 +41,7 @@ let item: FullItem = LoginItemBuilder::new("vaultUUID")
     .password(&"".to_string())
     .build();
 
-let (new_item, _) = connect.item().add(item).await?;
+let (new_item, _) = items::.add(&client, item).await?;
 
 // new_item = ItemData {
 //     id: "feprs5zpzn7ck5hwvk5r6zunju",
@@ -68,7 +74,6 @@ Under the hood, [Hyper](https://hyper.rs/) is used with [hyper_rustls](https://d
 ### Plans for the future
 
 - The current goal is to cover all existing API end-points, this should ideally not take too long
-- Make the HTTP client pluggable
 - TBD
 
 ## Development
