@@ -10,10 +10,13 @@
 //!
 //! - Based on tokio, hyper and hyper_rustls
 
+mod error;
+
 pub mod client;
-pub mod connect;
-pub mod error;
 pub mod models;
+pub mod vaults;
 
 #[cfg(test)]
-mod tests;
+fn get_test_client() -> client::Client {
+    client::Client::default()
+}

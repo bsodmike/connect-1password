@@ -1,6 +1,7 @@
 //! HTTP Client
 
 use crate::error::{Error, RequestNotSuccessful};
+use dotenv::dotenv;
 use exponential_backoff::Backoff;
 use hyper::{
     client::connect::HttpConnector, header::HeaderValue, Body, Client as HyperClient, Method,
@@ -35,6 +36,16 @@ impl Client {
             server_url: server_url.to_string(),
             https_client: hyper::Client::builder().build::<_, hyper::Body>(https),
         }
+    }
+
+    pub fn default() -> Self {
+        let token = std::env::var("OP_API_TOKEN").expect("1Password API token expected!");
+        let host = std::env::var("OP_SERVER_URL").expect("1Password Connect server URL expected!");
+
+        // .env to override settings in ENV
+        dotenv().ok();
+
+        Client::new(&token, &host)
     }
 
     pub fn api_key(&self) -> String {
