@@ -15,6 +15,7 @@ use std::{fmt, ops, thread, time::Duration};
 pub const GET: Method = Method::GET;
 pub const POST: Method = Method::POST;
 pub const PUT: Method = Method::PUT;
+pub const DELETE: Method = Method::DELETE;
 
 pub struct Client {
     api_key: String,
@@ -70,8 +71,12 @@ impl Client {
         let data: (Result<T, Error>, Value) = hyper::body::to_bytes(resp.into_body())
             .await
             .map_err(Error::new_network_error)
-            .map(|bytes| {
+            .map(|mut bytes| {
                 dbg!(&bytes);
+
+                if &bytes.len() == &0 {
+                    bytes = hyper::body::Bytes::from("{}");
+                }
                 let json = serde_json::from_slice(&bytes).map_err(Error::new_parsing_error);
 
                 (json, bytes)
@@ -86,6 +91,7 @@ impl Client {
 
                 match status {
                     StatusCode::OK => {}
+                    StatusCode::NO_CONTENT => {}
                     _ => {
                         debug!(
                             "Client error! Status: {}, JSON: {}",
