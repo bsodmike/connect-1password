@@ -1,3 +1,5 @@
+//! Vaults
+
 use crate::error::{ConnectAPIError, Error};
 use crate::{
     client::Client,

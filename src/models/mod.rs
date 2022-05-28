@@ -1,3 +1,5 @@
+//! Models
+
 pub(crate) mod item;
 mod vault;
 

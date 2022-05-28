@@ -1,3 +1,5 @@
+//! Vault items
+
 use crate::error::{ConnectAPIError, Error};
 use crate::{
     client::Client,
@@ -119,7 +121,7 @@ pub async fn remove(client: &Client, id: &str, item_id: &str) -> Result<(), crat
     Ok(())
 }
 
-const SLEEP_DELAY: u64 = 2; // seconds
+const SLEEP_DELAY: u64 = 4; // seconds
 
 #[cfg(test)]
 mod default {
