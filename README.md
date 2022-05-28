@@ -45,7 +45,7 @@ let (new_item, _) = items::.add(&client, item).await?;
 
 // new_item = ItemData {
 //     id: "feprs5zpzn7ck5hwvk5r6zunju",
-//     title: "",
+//     title: "Secure server login",
 //     vault: VaultID {
 //         id: "c6erdleqzhjlh4iu7ptwyd7hmy",
 //     },
@@ -63,6 +63,10 @@ let (new_item, _) = items::.add(&client, item).await?;
 //         2022-05-19T09:32:31.634126051Z,
 //     ),
 // }
+
+// Delete the same item
+items::remove(&client, "vaultUUID", &new_item.id)
+    .await?;
 ```
 
 Refer to the [docs](https://docs.rs/connect-1password/0.1.0/connect_1password/) for further examples.
