@@ -1,3 +1,5 @@
+use std::ascii::AsciiExt;
+
 use crate::error::{CustomError, Error};
 use chrono::{DateTime, Utc};
 use hyper::StatusCode;
@@ -45,7 +47,7 @@ pub struct UrlObject {
 }
 
 #[derive(Debug, Serialize, Clone)]
-pub struct ItemField {
+pub struct FieldObject {
     /// An object containing the UUID of a section in the item.
     pub section: Option<SectionID>,
     /// Use `purpose` for the username, password, and notes fields.
@@ -68,6 +70,15 @@ pub struct SectionObject {
     pub id: String,
     /// Some optional text
     pub label: Option<String>,
+}
+
+impl SectionObject {
+    pub fn new(id: &str, label: &str) -> Self {
+        Self {
+            id: id.to_string(),
+            label: Some(label.to_string()),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -101,7 +112,7 @@ pub struct FullItem {
     /// A vector of strings of the tags assigned to the item.
     pub tags: Option<Vec<String>>,
     /// A vector of Field objects of the fields to include with the item.
-    pub fields: Vec<ItemField>,
+    pub fields: Vec<FieldObject>,
     /// A vector of Section objects of the sections to include with the item.
     pub sections: Vec<SectionObject>,
 }
@@ -113,7 +124,7 @@ pub trait LoginItem {
 }
 
 #[derive(Debug)]
-pub struct LoginItemBuilder {
+pub struct ItemBuilder {
     /// The title of the item.
     pub title: String,
     /// An object containing an id property whose value is the UUID of the vault the item is in.
@@ -127,12 +138,12 @@ pub struct LoginItemBuilder {
     /// A vector of strings of the tags assigned to the item.
     pub tags: Option<Vec<String>>,
     /// A vector of Field objects of the fields to include with the item.
-    pub fields: Vec<ItemField>,
+    pub fields: Vec<FieldObject>,
     /// A vector of Section objects of the sections to include with the item.
     pub sections: Vec<SectionObject>,
 }
 
-impl LoginItemBuilder {
+impl ItemBuilder {
     pub fn new(vault_id: &str) -> Self {
         let vault = VaultID {
             id: vault_id.to_string(),
@@ -148,6 +159,25 @@ impl LoginItemBuilder {
             fields: vec![],
             sections: vec![],
         }
+    }
+
+    pub fn add_otp(mut self, secret: &str) -> Self {
+        let section = SectionID::new();
+        let section_obj = SectionObject::new(&section.id, "OTP");
+
+        self.sections.push(section_obj);
+
+        let field_object = FieldObject {
+            section: Some(section),
+            label: None,
+            purpose: None,
+            r#type: Some("OTP".to_string()),
+            generate: Some(true),
+            value: Some(secret.to_string()),
+        };
+        self.fields.push(field_object);
+
+        self
     }
 
     pub fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
@@ -168,14 +198,14 @@ impl LoginItemBuilder {
     }
 }
 
-impl LoginItem for LoginItemBuilder {
+impl LoginItem for ItemBuilder {
     fn title(mut self, title: &str) -> Self {
         self.title = title.to_string();
         self
     }
 
     fn username(mut self, username: &str) -> Self {
-        let field: ItemField = ItemField {
+        let field: FieldObject = FieldObject {
             value: Some(username.to_string()),
             purpose: Some("USERNAME".to_string()),
             generate: None,
@@ -189,7 +219,7 @@ impl LoginItem for LoginItemBuilder {
     }
 
     fn password(mut self, password: &str) -> Self {
-        let field: ItemField = ItemField {
+        let field: FieldObject = FieldObject {
             value: if password.is_empty() {
                 None
             } else {

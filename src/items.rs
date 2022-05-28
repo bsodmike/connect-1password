@@ -2,7 +2,7 @@ use crate::error::{ConnectAPIError, Error};
 use crate::{
     client::Client,
     models::{
-        item::{FullItem, ItemData, LoginItem, LoginItemBuilder},
+        item::{FullItem, ItemBuilder, ItemData, LoginItem},
         VaultStatus,
     },
     *,
@@ -144,10 +144,35 @@ mod test {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id)
             .title("Test login item")
             .username(&"Bob".to_string())
             .password(&"".to_string())
+            .build()
+            .unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
+        dbg!(&new_item);
+
+        assert_ne!(new_item.id, "foo");
+
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+
+        items::remove(&client, &test_vault_id, &new_item.id)
+            .await
+            .unwrap();
+    }
+
+    #[test]
+    async fn add_login_item_with_otp() {
+        let test_vault_id =
+            std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+        let client = get_test_client();
+
+        let item: FullItem = ItemBuilder::new(&test_vault_id)
+            .title("Test login item")
+            .username(&"Bob".to_string())
+            .password(&"".to_string())
+            .add_otp("replaceme")
             .build()
             .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();
@@ -169,7 +194,7 @@ mod test {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id)
             .username(&"Bob".to_string())
             .password(&"".to_string())
             .build()
@@ -183,7 +208,7 @@ mod test {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id)
             .title("Test login item, will be removed")
             .username(&"Bob".to_string())
             .password(&"".to_string())
