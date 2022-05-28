@@ -119,12 +119,22 @@ pub async fn remove(client: &Client, id: &str, item_id: &str) -> Result<(), crat
     Ok(())
 }
 
+const SLEEP_DELAY: u64 = 2; // seconds
+
 #[cfg(test)]
-mod test {
-    use super::*;
+mod default {
+    use super::SLEEP_DELAY;
+    use crate::get_test_client;
     use tokio::test;
 
-    const SLEEP_DELAY: u64 = 2; // seconds
+    use crate::{
+        client::Client,
+        items,
+        models::{
+            item::{DefaultItem, FullItem, ItemBuilder, ItemData},
+            VaultStatus,
+        },
+    };
 
     #[test]
     async fn all() {
@@ -137,6 +147,31 @@ mod test {
 
         assert!(items.is_empty());
     }
+
+    #[test]
+    async fn add_item() {
+        let test_vault_id =
+            std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+        let client = get_test_client();
+
+        let item: FullItem = ItemBuilder::new(&test_vault_id).build().unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
+        dbg!(&new_item);
+
+        assert_ne!(new_item.id, "foo");
+
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+
+        items::remove(&client, &test_vault_id, &new_item.id)
+            .await
+            .unwrap();
+    }
+}
+
+#[cfg(test)]
+mod login_item {
+    use super::*;
+    use tokio::test;
 
     #[test]
     async fn add_login_item() {

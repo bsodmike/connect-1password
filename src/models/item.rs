@@ -117,10 +117,15 @@ pub struct FullItem {
     pub sections: Vec<SectionObject>,
 }
 
+pub trait DefaultItem {
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
+}
+
 pub trait LoginItem {
     fn title(self, username: &str) -> Self;
     fn username(self, username: &str) -> Self;
     fn password(self, password: &str) -> Self;
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 #[derive(Debug)]
@@ -179,12 +184,10 @@ impl ItemBuilder {
 
         self
     }
+}
 
-    pub fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
-        if self.title.is_empty() {
-            return Err(Box::new(CustomError::new("Title is required")));
-        }
-
+impl DefaultItem for ItemBuilder {
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
         Ok(FullItem {
             title: self.title.clone(),
             category: self.category.clone(),
@@ -238,5 +241,22 @@ impl LoginItem for ItemBuilder {
 
         self.fields.push(field);
         self
+    }
+
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
+        if self.title.is_empty() {
+            return Err(Box::new(CustomError::new("Title is required")));
+        }
+
+        Ok(FullItem {
+            title: self.title.clone(),
+            category: self.category.clone(),
+            favorite: self.favorite,
+            fields: self.fields.clone(),
+            sections: self.sections.clone(),
+            tags: self.tags.clone(),
+            urls: self.urls.clone(),
+            vault: self.vault.clone(),
+        })
     }
 }
