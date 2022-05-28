@@ -105,6 +105,7 @@ mod test {
         let client = get_test_client();
 
         let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+            .title("Test login item")
             .username(&"Bob".to_string())
             .password(&"".to_string())
             .build()
