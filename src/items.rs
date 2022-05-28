@@ -128,12 +128,8 @@ mod default {
     use tokio::test;
 
     use crate::{
-        client::Client,
         items,
-        models::{
-            item::{DefaultItem, FullItem, ItemBuilder, ItemData},
-            VaultStatus,
-        },
+        models::item::{DefaultItem, FullItem, ItemBuilder},
     };
 
     #[test]
@@ -170,8 +166,14 @@ mod default {
 
 #[cfg(test)]
 mod login_item {
-    use super::*;
+    use super::SLEEP_DELAY;
+    use crate::get_test_client;
     use tokio::test;
+
+    use crate::{
+        items,
+        models::item::{FullItem, ItemBuilder, LoginItem},
+    };
 
     #[test]
     async fn add_login_item() {

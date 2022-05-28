@@ -21,11 +21,14 @@ this space for further updates.
 
 #### Basic API usage
 
+In the example below, we are using the `LoginItem` interface.  You can use different traits
+depending on the type of item you want to insert into your vault.
+
 ```rust
 use connect_1password::{
     client::Client,
     models::{
-        item::*,
+        item::{LoginItem, FullItem, ItemBuilder},
         *,
     },
 };
@@ -36,7 +39,8 @@ let client = Client::default();
 let (vaults, _) = vaults::all(&client).await?;
 
 // Add a login item
-let item: FullItem = LoginItemBuilder::new("vaultUUID")
+let item: FullItem = ItemBuilder::new("vaultUUID")
+    .title("Secure server login")
     .username(&"Bob".to_string())
     .password(&"".to_string())
     .build();
