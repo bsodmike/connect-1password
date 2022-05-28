@@ -166,7 +166,8 @@ impl ItemBuilder {
         }
     }
 
-    pub fn add_otp(mut self, secret: &str) -> Self {
+    // FIXME: This needs testing to ensure the OTP secret is applied correctly
+    pub(crate) fn add_otp(mut self, secret: &str) -> Self {
         let section = SectionID::new();
         let section_obj = SectionObject::new(&section.id, "OTP");
 

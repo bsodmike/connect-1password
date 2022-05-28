@@ -1,3 +1,5 @@
+//#![deny(missing_docs)]
+//#![deny(missing_debug_implementations)]
 #![forbid(unsafe_code)]
 #![deny(private_in_public, unstable_features)]
 #![warn(rust_2018_idioms, future_incompatible, nonstandard_style)]
