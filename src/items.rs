@@ -115,4 +115,19 @@ mod test {
 
         assert_ne!(new_item.id, "foo");
     }
+
+    #[should_panic]
+    #[test]
+    async fn add_login_item_requires_title() {
+        let test_vault_id =
+            std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+        let client = get_test_client();
+
+        let item: FullItem = LoginItemBuilder::new(&test_vault_id)
+            .username(&"Bob".to_string())
+            .password(&"".to_string())
+            .build()
+            .unwrap();
+        let (_new_item, _) = items::add(&client, item).await.unwrap();
+    }
 }
