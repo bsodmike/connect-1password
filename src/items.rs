@@ -228,8 +228,8 @@ mod login_item {
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item")
-            .username(&"Bob".to_string())
-            .password(&"".to_string())
+            .username("Bob")
+            .password("")
             .build()
             .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();
@@ -252,8 +252,8 @@ mod login_item {
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item")
-            .username(&"Bob".to_string())
-            .password(&"".to_string())
+            .username("Bob")
+            .password("")
             .add_otp("replaceme")
             .build()
             .unwrap();
@@ -277,8 +277,8 @@ mod login_item {
         let client = get_test_client();
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
-            .username(&"Bob".to_string())
-            .password(&"".to_string())
+            .username("Bob")
+            .password("")
             .build()
             .unwrap();
         let (_new_item, _) = items::add(&client, item).await.unwrap();
@@ -292,8 +292,8 @@ mod login_item {
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item, will be removed")
-            .username(&"Bob".to_string())
-            .password(&"".to_string())
+            .username("Bob")
+            .password("")
             .build()
             .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();
@@ -330,7 +330,7 @@ mod api_credential_item {
         let client = get_test_client();
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
-            .api_key(&"lawyer-rottenborn", "Dell XYZ")
+            .api_key("lawyer-rottenborn", "Dell XYZ")
             .build()
             .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();
@@ -370,7 +370,7 @@ mod api_credential_item {
         let client = get_test_client();
 
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
-            .api_key(&"", "Dell XYZ")
+            .api_key("", "Dell XYZ")
             .build()
             .unwrap();
         let (new_item, _) = items::add(&client, item).await.unwrap();

@@ -40,8 +40,8 @@
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::Login)
 //!         .title("Secure server login")
-//!         .username(&"Bob".to_string())
-//!         .password(&"".to_string())
+//!         .username("Bob")
+//!         .password("")
 //!         .build()
 //!         .unwrap();
 //!
@@ -87,7 +87,7 @@
 //!     assert!(!vaults.is_empty());
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
-//!         .api_key(&"", "Dell XYZ")
+//!         .api_key("", "Dell XYZ")
 //!         .build()
 //!         .unwrap();
 //!
@@ -141,7 +141,7 @@
 //!     assert!(!vaults.is_empty());
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
-//!         .api_key(&"smelly-socks", "Dell XYZ")
+//!         .api_key("smelly-socks", "Dell XYZ")
 //!         .build()
 //!         .unwrap();
 //!
