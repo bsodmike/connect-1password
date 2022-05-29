@@ -8,6 +8,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+/// Defines an Item Object
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct ItemData {
     /// The UUID of the item.
@@ -32,12 +33,14 @@ pub struct ItemData {
     pub updated_at: Option<DateTime<Utc>>,
 }
 
+/// Defines the Vault UUID via a record struct
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct VaultID {
     /// The UUID of the vault.
     pub id: String,
 }
 
+/// Defines a URL Object
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct UrlObject {
     /// The address.

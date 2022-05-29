@@ -19,70 +19,14 @@ this space for further updates.
 3. Make sure to update `OP_API_TOKEN` in the `.env` file.
 
 
-#### Basic API usage
-
-In the example below, we are using the `LoginItem` interface.  You can use different traits
-depending on the type of item you want to insert into your vault.
-
-```rust
-use connect_1password::{
-    client::Client,
-    models::{
-        item::{LoginItem, FullItem, ItemBuilder, ItemCategory},
-        *,
-    },
-};
-
-let client = Client::default();
-
-// List vaults
-let (vaults, _) = vaults::all(&client).await?;
-
-// Add a login item
-let item: FullItem = ItemBuilder::new("vaultUUID", ItemCategory::Login)
-    .title("Secure server login")
-    .username(&"Bob".to_string())
-    .password(&"".to_string())
-    .build();
-
-let (new_item, _) = items::.add(&client, item).await?;
-
-// new_item = ItemData {
-//     id: "feprs5zpzn7ck5hwvk5r6zunju",
-//     title: "Secure server login",
-//     vault: VaultID {
-//         id: "c6erdleqzhjlh4iu7ptwyd7hmy",
-//     },
-//     category: Some(
-//         "LOGIN",
-//     ),
-//     urls: None,
-//     favorite: None,
-//     tags: None,
-//     state: None,
-//     created_at: Some(
-//         2022-05-19T09:32:31.634125991Z,
-//     ),
-//     updated_at: Some(
-//         2022-05-19T09:32:31.634126051Z,
-//     ),
-// }
-
-// Delete the same item
-items::remove(&client, "vaultUUID", &new_item.id)
-    .await?;
-```
+## API usage
 
 Refer to the [docs](https://docs.rs/connect-1password/0.1.0/connect_1password/) for further examples.
 
-### HTTPClient
+### Upcoming enhancements
 
-Under the hood, [Hyper](https://hyper.rs/) is used with [hyper_rustls](https://docs.rs/hyper-rustls/latest/hyper_rustls/) which supports both HTTP and TLS connections out of the box.
-
-### Plans for the future
-
-- The current goal is to cover all existing API end-points, this should ideally not take too long
-- TBD
+- [ ] The current goal is to cover all existing API end-points (in progress).
+- TBD: If you have any requests, please open an issue!
 
 ## Development
 

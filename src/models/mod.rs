@@ -1,7 +1,9 @@
 //! Models
 
-pub(crate) mod item;
-mod vault;
+/// Item related models
+pub mod item;
+/// Vault related models
+pub mod vault;
 
 pub use item::*;
 pub use vault::*;
