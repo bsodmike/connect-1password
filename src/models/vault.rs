@@ -5,6 +5,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+/// Defines a Vault object
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct VaultData {
     /// The UUID of the vault.

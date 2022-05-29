@@ -23,14 +23,17 @@ pub const PUT: Method = Method::PUT;
 pub const DELETE: Method = Method::DELETE;
 
 /// Represents a (Hyper) HTTP client.
+#[derive(Debug)]
 pub struct Client {
     api_key: String,
     server_url: String,
     https_client: HyperClient<HttpsConnector<HttpConnector>>,
 }
 
+/// Interface for any compatible HTTP client
 #[async_trait]
 pub trait HTTPClient {
+    /// Send a request using the underlying HTTP client
     async fn send_request<T>(
         &self,
         method: &str,

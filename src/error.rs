@@ -12,8 +12,10 @@ use std::{
 /// A simple type alias so as to DRY.
 pub type ConnectResult<T> = Result<T, Error>;
 
+/// Boxed error type
 pub type Cause = Box<dyn StdError + Send + Sync>;
 
+/// Error type
 pub struct Error {
     inner: Box<ErrorImpl>,
 }
@@ -317,6 +319,8 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+/// Defines an error from the 1Password Connect API
+#[derive(Debug)]
 pub struct OPError {
     pub(super) status_code: Option<u16>,
     pub(super) captures: Option<Vec<String>>,
