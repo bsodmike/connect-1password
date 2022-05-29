@@ -22,7 +22,7 @@ pub const PUT: Method = Method::PUT;
 /// DELETE method
 pub const DELETE: Method = Method::DELETE;
 
-/// Represents a HTTP client.
+/// Represents a (Hyper) HTTP client.
 pub struct Client {
     api_key: String,
     server_url: String,
