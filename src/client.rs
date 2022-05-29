@@ -1,6 +1,7 @@
 //! HTTP Client
 
 use crate::error::{Error, RequestNotSuccessful};
+use async_trait::async_trait;
 use dotenv::dotenv;
 use exponential_backoff::Backoff;
 use hyper::{
@@ -10,7 +11,7 @@ use hyper::{
 use hyper_rustls::HttpsConnector;
 use log::{debug, error};
 use serde_json::Value;
-use std::{any::Any, fmt, ops, thread, time::Duration};
+use std::{fmt, ops, thread, time::Duration};
 
 /// GET method
 pub const GET: Method = Method::GET;
@@ -21,73 +22,29 @@ pub const PUT: Method = Method::PUT;
 /// DELETE method
 pub const DELETE: Method = Method::DELETE;
 
-struct HyperHTTPClient {
-    client: HyperClient<HttpsConnector<HttpConnector>>,
-}
-
-trait HTTPClient {
-    fn request(&self, req: hyper::Request<hyper::body::Body>) -> hyper::client::ResponseFuture;
-}
-
-impl HTTPClient for HyperHTTPClient {
-    fn request(&self, req: hyper::Request<hyper::body::Body>) -> hyper::client::ResponseFuture {
-        self.client.request(req)
-    }
-}
-
 /// Represents a HTTP client.
 pub struct Client {
     api_key: String,
     server_url: String,
-    https_client: Box<dyn HTTPClient>,
+    https_client: HyperClient<HttpsConnector<HttpConnector>>,
 }
 
-impl Client {
-    /// Create a new instance
-    ///
-    /// # Fields
-    ///
-    /// - `token`: provide the 1Password Connect API token.
-    /// - `server_url`: provide full URL to the host server, i.e. `http://localhost:8080`
-    pub fn new(token: &str, server_url: &str) -> Self {
-        let https = hyper_rustls::HttpsConnectorBuilder::new()
-            .with_native_roots()
-            .https_or_http()
-            .enable_http1()
-            .enable_http2()
-            .build();
+#[async_trait]
+pub trait HTTPClient {
+    async fn send_request<T>(
+        &self,
+        method: hyper::Method,
+        endpoint: &str,
+        params: &[(&str, &str)],
+        body: Option<String>,
+    ) -> Result<(T, Value), Error>
+    where
+        T: serde::de::DeserializeOwned + std::fmt::Debug;
+}
 
-        Self {
-            api_key: token.to_string(),
-            server_url: server_url.to_string(),
-            https_client: Box::new(HyperHTTPClient {
-                client: hyper::Client::builder().build::<_, hyper::Body>(https),
-            }),
-        }
-    }
-
-    /// Create an instance by fetching defaults from the host ENV.
-    ///
-    /// # Fields
-    ///
-    /// - `OP_API_TOKEN`: provide the 1Password Connect API token.
-    /// - `OP_SERVER_URL`: provide full URL to the host server, i.e. `http://localhost:8080`
-    pub fn default() -> Self {
-        let token = std::env::var("OP_API_TOKEN").expect("1Password API token expected!");
-        let host = std::env::var("OP_SERVER_URL").expect("1Password Connect server URL expected!");
-
-        // .env to override settings in ENV
-        dotenv().ok();
-
-        Client::new(&token, &host)
-    }
-
-    /// Returns the 1Password Connect API token.
-    pub fn token(&self) -> String {
-        self.api_key.clone()
-    }
-
-    pub(crate) async fn send_request<T>(
+#[async_trait]
+impl HTTPClient for Client {
+    async fn send_request<T>(
         &self,
         method: hyper::Method,
         endpoint: &str,
@@ -148,6 +105,50 @@ impl Client {
     }
 }
 
+impl Client {
+    /// Create a new instance
+    ///
+    /// # Fields
+    ///
+    /// - `token`: provide the 1Password Connect API token.
+    /// - `server_url`: provide full URL to the host server, i.e. `http://localhost:8080`
+    pub fn new(token: &str, server_url: &str) -> Self {
+        let https = hyper_rustls::HttpsConnectorBuilder::new()
+            .with_native_roots()
+            .https_or_http()
+            .enable_http1()
+            .enable_http2()
+            .build();
+
+        Self {
+            api_key: token.to_string(),
+            server_url: server_url.to_string(),
+            https_client: hyper::Client::builder().build::<_, hyper::Body>(https),
+        }
+    }
+
+    /// Create an instance by fetching defaults from the host ENV.
+    ///
+    /// # Fields
+    ///
+    /// - `OP_API_TOKEN`: provide the 1Password Connect API token.
+    /// - `OP_SERVER_URL`: provide full URL to the host server, i.e. `http://localhost:8080`
+    pub fn default() -> Self {
+        let token = std::env::var("OP_API_TOKEN").expect("1Password API token expected!");
+        let host = std::env::var("OP_SERVER_URL").expect("1Password Connect server URL expected!");
+
+        // .env to override settings in ENV
+        dotenv().ok();
+
+        Client::new(&token, &host)
+    }
+
+    /// Returns the 1Password Connect API token.
+    pub fn token(&self) -> String {
+        self.api_key.clone()
+    }
+}
+
 struct RetryErrors<'a>(pub(crate) &'a mut Vec<String>);
 
 impl<'a> fmt::Display for RetryErrors<'a> {
@@ -200,8 +201,7 @@ async fn retry_with_backoff(
         req.headers_mut()
             .insert("Authorization", HeaderValue::from_str(&auth)?);
 
-        let inner = Box::as_ref(&client.https_client);
-        match inner.request(req).await {
+        match client.https_client.request(req).await {
             Ok(value) => return Ok(value),
             Err(err) => {
                 let error_message = format!("[ Retrying ]: Client error: {}", err);

@@ -2,7 +2,7 @@
 
 use crate::error::{ConnectAPIError, Error};
 use crate::{
-    client::Client,
+    client::HTTPClient,
     models::{
         item::{FullItem, ItemBuilder, ItemData, LoginItem},
         VaultStatus,
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 /// Get all items
 pub async fn all(
-    client: &Client,
+    client: impl HTTPClient,
     id: &str,
 ) -> Result<(Vec<ItemData>, serde_json::Value), crate::error::Error> {
     let params = vec![("", "")];
@@ -48,7 +48,7 @@ pub async fn all(
 
 /// Add an item
 pub async fn add(
-    client: &Client,
+    client: impl HTTPClient,
     item: FullItem,
 ) -> Result<(ItemData, serde_json::Value), crate::error::Error> {
     let id = &item.vault.id;
@@ -88,7 +88,11 @@ pub async fn add(
 struct DeleteReturnType {}
 
 /// Delete an item
-pub async fn remove(client: &Client, id: &str, item_id: &str) -> Result<(), crate::error::Error> {
+pub async fn remove(
+    client: impl HTTPClient,
+    id: &str,
+    item_id: &str,
+) -> Result<(), crate::error::Error> {
     let params = vec![("", "")];
     let path = format!("v1/vaults/{}/items/{}", id, item_id);
     dbg!(&path);
@@ -140,7 +144,7 @@ mod default {
         let test_vault_id =
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
 
-        let (items, _) = items::all(&client, &test_vault_id).await.unwrap();
+        let (items, _) = items::all(client, &test_vault_id).await.unwrap();
         dbg!(&items);
 
         assert!(items.is_empty());
@@ -153,14 +157,15 @@ mod default {
         let client = get_test_client();
 
         let item: FullItem = ItemBuilder::new(&test_vault_id).build().unwrap();
-        let (new_item, _) = items::add(&client, item).await.unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        items::remove(&client, &test_vault_id, &new_item.id)
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -189,14 +194,15 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (new_item, _) = items::add(&client, item).await.unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        items::remove(&client, &test_vault_id, &new_item.id)
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -214,14 +220,15 @@ mod login_item {
             .add_otp("replaceme")
             .build()
             .unwrap();
-        let (new_item, _) = items::add(&client, item).await.unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        items::remove(&client, &test_vault_id, &new_item.id)
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -238,7 +245,7 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (_new_item, _) = items::add(&client, item).await.unwrap();
+        let (_new_item, _) = items::add(client, item).await.unwrap();
     }
 
     #[test]
@@ -253,18 +260,20 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (new_item, _) = items::add(&client, item).await.unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
         dbg!(&new_item);
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        items::remove(&client, &test_vault_id, &new_item.id)
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let (items, _) = items::all(&client, &test_vault_id).await.unwrap();
+        let client = get_test_client();
+        let (items, _) = items::all(client, &test_vault_id).await.unwrap();
         assert!(items.is_empty());
     }
 }
