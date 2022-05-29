@@ -12,7 +12,7 @@ pub async fn all(client: impl HTTPClient) -> Result<(Vec<VaultData>, serde_json:
     let params = vec![("", "")];
 
     let result = match client
-        .send_request::<Vec<VaultData>>(crate::client::GET, "v1/vaults", &params, None)
+        .send_request::<Vec<VaultData>>("GET", "v1/vaults", &params, None)
         .await
     {
         Ok(value) => value,
@@ -47,7 +47,7 @@ pub async fn get(
     let path = format!("v1/vaults/{}", id);
 
     let result = match client
-        .send_request::<VaultData>(crate::client::GET, &path, &params, None)
+        .send_request::<VaultData>("GET", &path, &params, None)
         .await
     {
         Ok(value) => value,

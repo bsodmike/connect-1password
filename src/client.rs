@@ -33,7 +33,7 @@ pub struct Client {
 pub trait HTTPClient {
     async fn send_request<T>(
         &self,
-        method: hyper::Method,
+        method: &str,
         endpoint: &str,
         params: &[(&str, &str)],
         body: Option<String>,
@@ -46,7 +46,7 @@ pub trait HTTPClient {
 impl HTTPClient for Client {
     async fn send_request<T>(
         &self,
-        method: hyper::Method,
+        method: &str,
         endpoint: &str,
         params: &[(&str, &str)],
         body: Option<String>,
@@ -55,6 +55,14 @@ impl HTTPClient for Client {
         T: serde::de::DeserializeOwned + std::fmt::Debug,
     {
         let api_key: &String = &self.api_key;
+
+        let method = match method {
+            "GET" => GET,
+            "POST" => POST,
+            "PUT" => PUT,
+            "DELETE" => DELETE,
+            &_ => GET,
+        };
 
         let resp = retry_with_backoff(self, &method, &api_key[..], endpoint, params, body).await?;
         let status = resp.status();

@@ -20,7 +20,7 @@ pub async fn all(
     let path = format!("v1/vaults/{}/items", id);
 
     let result = match client
-        .send_request::<Vec<ItemData>>(crate::client::GET, &path, &params, None)
+        .send_request::<Vec<ItemData>>("GET", &path, &params, None)
         .await
     {
         Ok(value) => value,
@@ -58,7 +58,7 @@ pub async fn add(
 
     let body = Some(serde_json::to_string(&item)?);
     let result = match client
-        .send_request::<ItemData>(crate::client::POST, &path, &params, body)
+        .send_request::<ItemData>("POST", &path, &params, body)
         .await
     {
         Ok(value) => value,
@@ -99,7 +99,7 @@ pub async fn remove(
 
     let body = None;
     let _result = match client
-        .send_request::<DeleteReturnType>(crate::client::DELETE, &path, &params, body)
+        .send_request::<DeleteReturnType>("DELETE", &path, &params, body)
         .await
     {
         Ok(value) => value,
