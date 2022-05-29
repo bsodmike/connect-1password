@@ -35,7 +35,7 @@
 //! async fn main() -> Result<(), Error> {
 //!     let client = Client::default();
 //!
-//!     let (vaults, _) = vaults::all(client).await?;
+//!     let (vaults, _) = vaults::all(&client).await?;
 //!     assert!(!vaults.is_empty());
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::Login)
@@ -45,15 +45,13 @@
 //!         .build()
 //!         .unwrap();
 //!
-//!     let client = Client::default();
-//!     let (new_item, _) = items::add(client, item).await?;
+//!     let (new_item, _) = items::add(&client, item).await?;
 //!     assert_eq!(new_item.title, "Secure server login");
 //!
 //!     // Just as a clean up measure, we remove the item created in the this example
 //!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 //!
-//!     let client = Client::default();
-//!     items::remove(client, &vaults[0].id, &new_item.id)
+//!     items::remove(&client, &vaults[0].id, &new_item.id)
 //!         .await?;
 //!
 //!     Ok(())
@@ -85,7 +83,7 @@
 //! async fn main() -> Result<(), Error> {
 //!     let client = Client::default();
 //!
-//!     let (vaults, _) = vaults::all(client).await?;
+//!     let (vaults, _) = vaults::all(&client).await?;
 //!     assert!(!vaults.is_empty());
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
@@ -94,13 +92,12 @@
 //!         .unwrap();
 //!
 //!     let client = Client::default();
-//!     let (new_item, _) = items::add(client, item).await?;
+//!     let (new_item, _) = items::add(&client, item).await?;
 //!     assert_eq!(new_item.title, "Dell XYZ");
 //!
 //!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 //!
-//!     let client = Client::default();
-//!     let (item, _) = items::get(client, &vaults[0].id, &new_item.id).await?;
+//!     let (item, _) = items::get(&client, &vaults[0].id, &new_item.id).await?;
 //!     let fields: Vec<_> = item.fields.into_iter().filter(|r| r.value.is_some()).collect();
 //!     assert_eq!(fields.len(), 1);
 //!     dbg!(&fields);
@@ -114,8 +111,7 @@
 //!     // Just as a clean up measure, we remove the item created in the this example
 //!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 //!
-//!     let client = Client::default();
-//!     items::remove(client, &vaults[0].id, &new_item.id)
+//!     items::remove(&client, &vaults[0].id, &new_item.id)
 //!         .await?;
 //!
 //!     Ok(())
@@ -141,7 +137,7 @@
 //! async fn main() -> Result<(), Error> {
 //!     let client = Client::default();
 //!
-//!     let (vaults, _) = vaults::all(client).await?;
+//!     let (vaults, _) = vaults::all(&client).await?;
 //!     assert!(!vaults.is_empty());
 //!
 //!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
@@ -149,14 +145,13 @@
 //!         .build()
 //!         .unwrap();
 //!
-//!     let client = Client::default();
-//!     let (new_item, _) = items::add(client, item).await?;
+//!     let (new_item, _) = items::add(&client, item).await?;
 //!     assert_eq!(new_item.title, "Dell XYZ");
 //!
 //!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 //!
 //!     let client = Client::default();
-//!     let (item, _) = items::get(client, &vaults[0].id, &new_item.id).await?;
+//!     let (item, _) = items::get(&client, &vaults[0].id, &new_item.id).await?;
 //!     let fields: Vec<_> = item.fields.into_iter().filter(|r| r.value.is_some()).collect();
 //!     assert_eq!(fields.len(), 1);
 //!     dbg!(&fields);
@@ -170,8 +165,7 @@
 //!     // Just as a clean up measure, we remove the item created in the this example
 //!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 //!
-//!     let client = Client::default();
-//!     items::remove(client, &vaults[0].id, &new_item.id)
+//!     items::remove(&client, &vaults[0].id, &new_item.id)
 //!         .await?;
 //!
 //!     Ok(())

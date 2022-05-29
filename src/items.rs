@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 /// Get all items
 pub async fn all(
-    client: impl HTTPClient,
+    client: &impl HTTPClient,
     id: &str,
 ) -> Result<(Vec<ItemData>, serde_json::Value), crate::error::Error> {
     let params = vec![("", "")];
@@ -48,7 +48,7 @@ pub async fn all(
 
 /// Get item details
 pub async fn get(
-    client: impl HTTPClient,
+    client: &impl HTTPClient,
     vault_id: &str,
     item_id: &str,
 ) -> Result<(FullItem, serde_json::Value), crate::error::Error> {
@@ -85,7 +85,7 @@ pub async fn get(
 
 /// Add an item
 pub async fn add(
-    client: impl HTTPClient,
+    client: &impl HTTPClient,
     item: FullItem,
 ) -> Result<(ItemData, serde_json::Value), crate::error::Error> {
     let id = &item.vault.id;
@@ -126,7 +126,7 @@ struct DeleteReturnType {}
 
 /// Delete an item
 pub async fn remove(
-    client: impl HTTPClient,
+    client: &impl HTTPClient,
     id: &str,
     item_id: &str,
 ) -> Result<(), crate::error::Error> {
@@ -181,7 +181,7 @@ mod default {
         let test_vault_id =
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
 
-        let (items, _) = items::all(client, &test_vault_id).await.unwrap();
+        let (items, _) = items::all(&client, &test_vault_id).await.unwrap();
         dbg!(&items);
 
         assert!(items.is_empty());
@@ -196,15 +196,14 @@ mod default {
         let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -233,15 +232,14 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -259,15 +257,14 @@ mod login_item {
             .add_otp("replaceme")
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -284,7 +281,7 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (_new_item, _) = items::add(client, item).await.unwrap();
+        let (_new_item, _) = items::add(&client, item).await.unwrap();
     }
 
     #[test]
@@ -299,20 +296,18 @@ mod login_item {
             .password(&"".to_string())
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 
-        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY + 2, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        let (items, _) = items::all(client, &test_vault_id).await.unwrap();
+        let (items, _) = items::all(&client, &test_vault_id).await.unwrap();
         assert!(items.is_empty());
     }
 }
@@ -338,13 +333,12 @@ mod api_credential_item {
             .api_key(&"lawyer-rottenborn", "Dell XYZ")
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         assert_eq!(new_item.title, "Dell XYZ");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        let (item, _) = items::get(client, &test_vault_id, &new_item.id)
+        let (item, _) = items::get(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
         let fields: Vec<_> = item
@@ -364,8 +358,7 @@ mod api_credential_item {
         // Just as a clean up measure, we remove the item created in the this example
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }
@@ -380,15 +373,14 @@ mod api_credential_item {
             .api_key(&"", "Dell XYZ")
             .build()
             .unwrap();
-        let (new_item, _) = items::add(client, item).await.unwrap();
+        let (new_item, _) = items::add(&client, item).await.unwrap();
         dbg!(&new_item);
 
         assert_ne!(new_item.id, "foo");
 
         tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
 
-        let client = get_test_client();
-        items::remove(client, &test_vault_id, &new_item.id)
+        items::remove(&client, &test_vault_id, &new_item.id)
             .await
             .unwrap();
     }

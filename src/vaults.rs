@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// Get all known vaults
-pub async fn all(client: impl HTTPClient) -> Result<(Vec<VaultData>, serde_json::Value), Error> {
+pub async fn all(client: &impl HTTPClient) -> Result<(Vec<VaultData>, serde_json::Value), Error> {
     let params = vec![("", "")];
 
     let result = match client
@@ -40,7 +40,7 @@ pub async fn all(client: impl HTTPClient) -> Result<(Vec<VaultData>, serde_json:
 
 /// Get vault details
 pub async fn get(
-    client: impl HTTPClient,
+    client: &impl HTTPClient,
     id: &str,
 ) -> Result<(VaultData, serde_json::Value), Error> {
     let params = vec![("", "")];
@@ -94,7 +94,7 @@ mod test {
     async fn all() {
         let client = get_test_client();
 
-        let (vaults, _) = vaults::all(client).await.unwrap();
+        let (vaults, _) = vaults::all(&client).await.unwrap();
         dbg!(&vaults);
 
         assert_eq!(vaults[0].name, "Automated".to_string());
@@ -106,7 +106,7 @@ mod test {
         let test_vault_id =
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
 
-        let (vault, _) = vaults::get(client, &test_vault_id).await.unwrap();
+        let (vault, _) = vaults::get(&client, &test_vault_id).await.unwrap();
         dbg!(&vault);
 
         assert_eq!(vault.name, "Automated".to_string());
@@ -117,7 +117,7 @@ mod test {
     async fn get_vault_details_not_specified() {
         let client = get_test_client();
 
-        let (vault, _) = vaults::get(client, "").await.unwrap();
+        let (vault, _) = vaults::get(&client, "").await.unwrap();
 
         assert_eq!(vault.name, "Automated".to_string());
     }
@@ -127,6 +127,6 @@ mod test {
     async fn get_vault_details_invalid_vault() {
         let client = get_test_client();
 
-        let (_vault, _) = vaults::get(client, "foo").await.unwrap();
+        let (_vault, _) = vaults::get(&client, "foo").await.unwrap();
     }
 }
