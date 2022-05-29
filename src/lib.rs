@@ -9,9 +9,14 @@
 //! # High-level features
 //!
 //! - Based on [`tokio`], [`hyper`] and [`hyper_rustls`] by default.
-//! - [`hyper`] can be replaced using the `HTTPClient` interface.
+//! - [`hyper`] can be replaced using the [`HTTPClient`](client::HTTPClient) interface.
 //!
 //! # Examples
+//!
+//! ## Create a Login item
+//!
+//! To create a Login item, make sure to use the Trait [`LoginItem`](models::item::LoginItem), so as to be able to call
+//! respective methods (enforced by the interface) on [`ItemBuilder`](models::item::ItemBuilder).
 //!
 //! ```
 //! use connect_1password::{

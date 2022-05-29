@@ -22,6 +22,8 @@ pub const PUT: Method = Method::PUT;
 /// DELETE method
 pub const DELETE: Method = Method::DELETE;
 
+const RETRY_ATTEMPTS: u32 = 5;
+
 /// Represents a (Hyper) HTTP client.
 #[derive(Debug)]
 pub struct Client {
@@ -187,7 +189,7 @@ async fn retry_with_backoff(
     params: &[(&str, &str)],
     body: Option<String>,
 ) -> Result<Response<Body>, Error> {
-    let retries = 1;
+    let retries = RETRY_ATTEMPTS;
     let min = Duration::from_millis(100);
     let max = Duration::from_secs(20);
     let backoff = Backoff::new(retries, min, max);
