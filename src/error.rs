@@ -12,8 +12,10 @@ use std::{
 /// A simple type alias so as to DRY.
 pub type ConnectResult<T> = Result<T, Error>;
 
+/// Boxed error type
 pub type Cause = Box<dyn StdError + Send + Sync>;
 
+/// Error type
 pub struct Error {
     inner: Box<ErrorImpl>,
 }
@@ -118,8 +120,11 @@ impl Error {
             }
             Kind::SerdeJsonError(_) => "serde deserialization error".to_string(),
             Kind::Utf8Error => "parsing bytes experienced a UTF8 error".to_string(),
+            Kind::CustomError(err) => {
+                format!("Error: {}", err)
+            }
             Kind::ConnectAPIError(err) => {
-                format!("vault error: {}", err)
+                format!("Connect API error: {}", err)
             }
         }
     }
@@ -155,13 +160,16 @@ pub struct ConnectAPIError {
     /// Error message from the API.
     pub message: String,
     /// Status code returned by the HTTP call.
-    pub status: StatusCode,
+    pub status: String,
 }
 
 impl ConnectAPIError {
     /// Create a new unsuccessful request error.
-    pub fn new(status: StatusCode, message: String) -> Self {
-        Self { status, message }
+    pub fn new(status: String, message: &str) -> Self {
+        Self {
+            status: status.to_string(),
+            message: message.to_string(),
+        }
     }
 }
 
@@ -173,8 +181,34 @@ impl Display for ConnectAPIError {
     }
 }
 
+/// Wrapper type for custom errors.
+#[derive(Debug)]
+pub struct CustomError {
+    /// Error message.
+    pub message: String,
+}
+
+impl CustomError {
+    /// Create a new custom error.
+    pub fn new(message: &str) -> Self {
+        Self {
+            message: message.to_string(),
+        }
+    }
+}
+
+impl StdError for CustomError {}
+
+impl Display for CustomError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Message: {}", self.message)
+    }
+}
+
 #[derive(Debug)]
 pub(super) enum Kind {
+    CustomError(CustomError),
+
     /// The failure was due to a Hyper error
     HyperError(hyper::Error),
 
@@ -242,6 +276,9 @@ impl fmt::Display for Kind {
             &Self::ConnectAPIError(_) => {
                 write!(f, "ConnectAPIError")
             }
+            &Self::CustomError(_) => {
+                write!(f, "CustomError")
+            }
         }
     }
 }
@@ -282,6 +319,8 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+/// Defines an error from the 1Password Connect API
+#[derive(Debug)]
 pub struct OPError {
     pub(super) status_code: Option<u16>,
     pub(super) captures: Option<Vec<String>>,

@@ -19,57 +19,14 @@ this space for further updates.
 3. Make sure to update `OP_API_TOKEN` in the `.env` file.
 
 
-#### Basic API usage
-
-```rust
-use connect_1password::connect::Connect;
-
-let connect = Connect::new();
-
-// List vaults
-let (vaults, _) = connect.vault().get_list().await?;
-
-// Add a login item
-let item: FullItem = LoginItemBuilder::new("vaultUUID")
-    .username(&"Bob".to_string())
-    .password(&"".to_string())
-    .build();
-
-let (new_item, _) = connect.item().add(item).await?;
-
-// new_item = ItemData {
-//     id: "feprs5zpzn7ck5hwvk5r6zunju",
-//     title: "",
-//     vault: VaultID {
-//         id: "c6erdleqzhjlh4iu7ptwyd7hmy",
-//     },
-//     category: Some(
-//         "LOGIN",
-//     ),
-//     urls: None,
-//     favorite: None,
-//     tags: None,
-//     state: None,
-//     created_at: Some(
-//         2022-05-19T09:32:31.634125991Z,
-//     ),
-//     updated_at: Some(
-//         2022-05-19T09:32:31.634126051Z,
-//     ),
-// }
-```
+## API usage
 
 Refer to the [docs](https://docs.rs/connect-1password/0.1.0/connect_1password/) for further examples.
 
-### HTTPClient
+### Upcoming enhancements
 
-Under the hood, [Hyper](https://hyper.rs/) is used with [hyper_rustls](https://docs.rs/hyper-rustls/latest/hyper_rustls/) which supports both HTTP and TLS connections out of the box.
-
-### Plans for the future
-
-- The current goal is to cover all existing API end-points, this should ideally not take too long
-- Make the HTTP client pluggable
-- TBD
+- [ ] The current goal is to cover all existing API end-points (in progress).
+- TBD: If you have any requests, please open an issue!
 
 ## Development
 
