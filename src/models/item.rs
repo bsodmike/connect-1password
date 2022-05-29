@@ -64,6 +64,21 @@ pub struct FieldObject {
     pub label: Option<String>,
 }
 
+#[derive(Debug)]
+pub enum FieldType {
+    Concealed,
+}
+
+impl Into<String> for FieldType {
+    fn into(self) -> String {
+        let value = match self {
+            Self::Concealed => "CONCEALED",
+        };
+
+        value.to_string()
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct SectionObject {
     /// The UUID of the section.
@@ -128,6 +143,11 @@ pub trait LoginItem {
     fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
 }
 
+pub trait ApiCredentialItem {
+    fn api_key(self, key: &str, title: &str) -> Self;
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
+}
+
 #[derive(Debug)]
 pub struct ItemBuilder {
     /// The title of the item.
@@ -164,9 +184,9 @@ impl ItemCategory {
 impl Into<String> for ItemCategory {
     fn into(self) -> String {
         let value = match self {
-            ItemCategory::ApiCredential => "API_CREDENTIAL",
-            ItemCategory::Login => "LOGIN",
-            ItemCategory::Password => "PASSWORD",
+            Self::ApiCredential => "API_CREDENTIAL",
+            Self::Login => "LOGIN",
+            Self::Password => "PASSWORD",
         };
 
         value.to_string()
@@ -249,17 +269,9 @@ impl LoginItem for ItemBuilder {
 
     fn password(mut self, password: &str) -> Self {
         let field: FieldObject = FieldObject {
-            value: if password.is_empty() {
-                None
-            } else {
-                Some(password.to_string())
-            },
+            value: password.is_empty().then(|| password.to_string()),
             purpose: Some("PASSWORD".to_string()),
-            generate: if password.is_empty() {
-                Some(true)
-            } else {
-                None
-            },
+            generate: password.is_empty().then(|| true),
             label: None,
             r#type: None,
             section: None,
@@ -274,6 +286,41 @@ impl LoginItem for ItemBuilder {
             return Err(Box::new(CustomError::new("Title is required")));
         }
 
+        Ok(FullItem {
+            title: self.title.clone(),
+            category: self.category.clone(),
+            favorite: self.favorite,
+            fields: self.fields.clone(),
+            sections: self.sections.clone(),
+            tags: self.tags.clone(),
+            urls: self.urls.clone(),
+            vault: self.vault.clone(),
+        })
+    }
+}
+
+impl ApiCredentialItem for ItemBuilder {
+    fn api_key(mut self, key: &str, title: &str) -> Self {
+        let section = SectionID::new();
+        let section_obj = SectionObject::new(&section.id, "API Key");
+
+        self.sections.push(section_obj);
+
+        let field_object = FieldObject {
+            section: Some(section),
+            label: None,
+            purpose: None,
+            r#type: Some(FieldType::Concealed.into()),
+            generate: Some(key.is_empty()),
+            value: Some(key.to_string()),
+        };
+        self.fields.push(field_object);
+        self.title = title.to_string();
+
+        self
+    }
+
+    fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>> {
         Ok(FullItem {
             title: self.title.clone(),
             category: self.category.clone(),

@@ -279,3 +279,38 @@ mod login_item {
         assert!(items.is_empty());
     }
 }
+
+#[cfg(test)]
+mod api_credential_item {
+    use super::SLEEP_DELAY;
+    use crate::get_test_client;
+    use tokio::test;
+
+    use crate::{
+        items,
+        models::item::{ApiCredentialItem, FullItem, ItemBuilder, ItemCategory},
+    };
+
+    #[test]
+    async fn add_api_credential_item() {
+        let test_vault_id =
+            std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+        let client = get_test_client();
+
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
+            .api_key(&"", "Dell XYZ")
+            .build()
+            .unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
+        dbg!(&new_item);
+
+        assert_ne!(new_item.id, "foo");
+
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
+            .await
+            .unwrap();
+    }
+}
