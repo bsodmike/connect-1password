@@ -135,7 +135,7 @@ mod default {
 
     use crate::{
         items,
-        models::item::{DefaultItem, FullItem, ItemBuilder},
+        models::item::{DefaultItem, FullItem, ItemBuilder, ItemCategory},
     };
 
     #[test]
@@ -156,7 +156,9 @@ mod default {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = ItemBuilder::new(&test_vault_id).build().unwrap();
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
+            .build()
+            .unwrap();
         let (new_item, _) = items::add(client, item).await.unwrap();
         dbg!(&new_item);
 
@@ -179,7 +181,7 @@ mod login_item {
 
     use crate::{
         items,
-        models::item::{FullItem, ItemBuilder, LoginItem},
+        models::item::{FullItem, ItemBuilder, ItemCategory, LoginItem},
     };
 
     #[test]
@@ -188,7 +190,7 @@ mod login_item {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = ItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item")
             .username(&"Bob".to_string())
             .password(&"".to_string())
@@ -213,7 +215,7 @@ mod login_item {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = ItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item")
             .username(&"Bob".to_string())
             .password(&"".to_string())
@@ -240,7 +242,7 @@ mod login_item {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = ItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .username(&"Bob".to_string())
             .password(&"".to_string())
             .build()
@@ -254,7 +256,7 @@ mod login_item {
             std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
         let client = get_test_client();
 
-        let item: FullItem = ItemBuilder::new(&test_vault_id)
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::Login)
             .title("Test login item, will be removed")
             .username(&"Bob".to_string())
             .password(&"".to_string())

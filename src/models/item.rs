@@ -148,8 +148,33 @@ pub struct ItemBuilder {
     pub sections: Vec<SectionObject>,
 }
 
+#[derive(Debug)]
+pub enum ItemCategory {
+    ApiCredential,
+    Login,
+    Password,
+}
+
+impl ItemCategory {
+    fn default() -> Self {
+        Self::ApiCredential
+    }
+}
+
+impl Into<String> for ItemCategory {
+    fn into(self) -> String {
+        let value = match self {
+            ItemCategory::ApiCredential => "API_CREDENTIAL",
+            ItemCategory::Login => "LOGIN",
+            ItemCategory::Password => "PASSWORD",
+        };
+
+        value.to_string()
+    }
+}
+
 impl ItemBuilder {
-    pub fn new(vault_id: &str) -> Self {
+    pub fn new(vault_id: &str, category: ItemCategory) -> Self {
         let vault = VaultID {
             id: vault_id.to_string(),
         };
@@ -157,7 +182,7 @@ impl ItemBuilder {
         Self {
             vault,
             title: String::default(),
-            category: Some("LOGIN".to_string()),
+            category: Some(category.into()),
             favorite: false,
             urls: None,
             tags: None,
