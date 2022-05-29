@@ -46,6 +46,43 @@ pub async fn all(
     Ok(result)
 }
 
+/// Get item details
+pub async fn get(
+    client: impl HTTPClient,
+    vault_id: &str,
+    item_id: &str,
+) -> Result<(FullItem, serde_json::Value), crate::error::Error> {
+    let params = vec![("", "")];
+    let path = format!("v1/vaults/{}/items/{}", vault_id, item_id);
+
+    let body = None;
+    let result = match client
+        .send_request::<FullItem>("GET", &path, &params, body)
+        .await
+    {
+        Ok(value) => value,
+        Err(err) => {
+            let op_error = crate::error::process_connect_error_response(err.to_string())?;
+
+            let message = "Invalid bearer token";
+            if err.to_string().contains(message) {
+                let status = StatusWrapper {
+                    status: op_error.status_code.unwrap_or_default(),
+                };
+
+                return Err(Error::new_connect_error(ConnectAPIError::new(
+                    status.into(),
+                    message,
+                )));
+            }
+
+            return Err(Error::new_internal_error().with(err));
+        }
+    };
+
+    Ok(result)
+}
+
 /// Add an item
 pub async fn add(
     client: impl HTTPClient,
@@ -290,6 +327,48 @@ mod api_credential_item {
         items,
         models::item::{ApiCredentialItem, FullItem, ItemBuilder, ItemCategory},
     };
+
+    #[test]
+    async fn get_item() {
+        let test_vault_id =
+            std::env::var("OP_TESTING_VAULT_ID").expect("1Password Vault ID for testing");
+        let client = get_test_client();
+
+        let item: FullItem = ItemBuilder::new(&test_vault_id, ItemCategory::ApiCredential)
+            .api_key(&"lawyer-rottenborn", "Dell XYZ")
+            .build()
+            .unwrap();
+        let (new_item, _) = items::add(client, item).await.unwrap();
+        assert_eq!(new_item.title, "Dell XYZ");
+
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+
+        let client = get_test_client();
+        let (item, _) = items::get(client, &test_vault_id, &new_item.id)
+            .await
+            .unwrap();
+        let fields: Vec<_> = item
+            .fields
+            .into_iter()
+            .filter(|r| r.value.is_some())
+            .collect();
+        assert_eq!(fields.len(), 1);
+        dbg!(&fields);
+
+        let default_value = "".to_string();
+        let api_value = fields[0].value.as_ref().unwrap_or(&default_value);
+        let field_type = fields[0].r#type.as_ref().unwrap_or(&default_value);
+        assert_eq!(field_type, "CONCEALED");
+        assert_eq!(api_value, "lawyer-rottenborn");
+
+        // Just as a clean up measure, we remove the item created in the this example
+        tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+
+        let client = get_test_client();
+        items::remove(client, &test_vault_id, &new_item.id)
+            .await
+            .unwrap();
+    }
 
     #[test]
     async fn add_api_credential_item() {

@@ -59,6 +59,124 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! ## Create an API Credential item
+//!
+//! This is ideally used for programmatic access, and potentially the main interface required for
+//! this entire API wrapper.
+//!
+//! In the example below, since we have not provided a specific API key value, one is generated for
+//! us by the Connect API.
+//!
+//! ```
+//! use connect_1password::{
+//!     error::Error,
+//!     client::{Client, HTTPClient},
+//!     models::{
+//!         item::{ApiCredentialItem, FullItem, ItemBuilder, ItemCategory, FieldObject},
+//!     },
+//!     vaults,
+//!     items,
+//! };
+//!
+//! const SLEEP_DELAY: u64 = 4; // seconds
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error> {
+//!     let client = Client::default();
+//!
+//!     let (vaults, _) = vaults::all(client).await?;
+//!     assert!(!vaults.is_empty());
+//!
+//!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
+//!         .api_key(&"", "Dell XYZ")
+//!         .build()
+//!         .unwrap();
+//!
+//!     let client = Client::default();
+//!     let (new_item, _) = items::add(client, item).await?;
+//!     assert_eq!(new_item.title, "Dell XYZ");
+//!
+//!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+//!
+//!     let client = Client::default();
+//!     let (item, _) = items::get(client, &vaults[0].id, &new_item.id).await?;
+//!     let fields: Vec<_> = item.fields.into_iter().filter(|r| r.value.is_some()).collect();
+//!     assert_eq!(fields.len(), 1);
+//!     dbg!(&fields);
+//!
+//!     let default_value = "".to_string();
+//!     let api_value = fields[0].value.as_ref().unwrap_or(&default_value);
+//!     let field_type = fields[0].r#type.as_ref().unwrap_or(&default_value);
+//!     assert_eq!(field_type, "CONCEALED");
+//!     assert!(!api_value.is_empty());
+//!
+//!     // Just as a clean up measure, we remove the item created in the this example
+//!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+//!
+//!     let client = Client::default();
+//!     items::remove(client, &vaults[0].id, &new_item.id)
+//!         .await?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! However, if we provide a specific key, this is the value persisted into 1Password.
+//!
+//! ```
+//! use connect_1password::{
+//!     error::Error,
+//!     client::{Client, HTTPClient},
+//!     models::{
+//!         item::{ApiCredentialItem, FullItem, ItemBuilder, ItemCategory, FieldObject},
+//!     },
+//!     vaults,
+//!     items,
+//! };
+//!
+//! const SLEEP_DELAY: u64 = 4; // seconds
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error> {
+//!     let client = Client::default();
+//!
+//!     let (vaults, _) = vaults::all(client).await?;
+//!     assert!(!vaults.is_empty());
+//!
+//!     let item: FullItem = ItemBuilder::new(&vaults[0].id, ItemCategory::ApiCredential)
+//!         .api_key(&"smelly-socks", "Dell XYZ")
+//!         .build()
+//!         .unwrap();
+//!
+//!     let client = Client::default();
+//!     let (new_item, _) = items::add(client, item).await?;
+//!     assert_eq!(new_item.title, "Dell XYZ");
+//!
+//!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+//!
+//!     let client = Client::default();
+//!     let (item, _) = items::get(client, &vaults[0].id, &new_item.id).await?;
+//!     let fields: Vec<_> = item.fields.into_iter().filter(|r| r.value.is_some()).collect();
+//!     assert_eq!(fields.len(), 1);
+//!     dbg!(&fields);
+//!
+//!     let default_value = "".to_string();
+//!     let api_value = fields[0].value.as_ref().unwrap_or(&default_value);
+//!     let field_type = fields[0].r#type.as_ref().unwrap_or(&default_value);
+//!     assert_eq!(field_type, "CONCEALED");
+//!     assert_eq!(api_value, "smelly-socks");
+//!
+//!     // Just as a clean up measure, we remove the item created in the this example
+//!     tokio::time::sleep(std::time::Duration::new(SLEEP_DELAY, 0)).await;
+//!
+//!     let client = Client::default();
+//!     items::remove(client, &vaults[0].id, &new_item.id)
+//!         .await?;
+//!
+//!     Ok(())
+//! }
+//! ```
 
 pub mod client;
 pub mod error;

@@ -50,7 +50,7 @@ pub struct UrlObject {
 }
 
 /// This is a Field Object
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FieldObject {
     /// An object containing the UUID of a section in the item.
     pub section: Option<SectionID>,
@@ -86,7 +86,7 @@ impl Into<String> for FieldType {
 }
 
 /// This is a Section Object
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct SectionObject {
     /// The UUID of the section.
     pub id: String,
@@ -105,7 +105,7 @@ impl SectionObject {
 }
 
 /// This is a SectionID
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct SectionID {
     /// The UUID of the section.
     pub id: String,
@@ -121,7 +121,7 @@ impl SectionID {
 }
 
 /// This is a FullItem
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct FullItem {
     /// The title of the item.
     pub title: String,
@@ -132,7 +132,7 @@ pub struct FullItem {
     /// Vector of URL objects containing URLs for the item.
     pub urls: Option<Vec<UrlObject>>,
     /// Whether the item is marked as a favourite.
-    pub favorite: bool,
+    pub favorite: Option<bool>,
     /// A vector of strings of the tags assigned to the item.
     pub tags: Option<Vec<String>>,
     /// A vector of Field objects of the fields to include with the item.
@@ -179,7 +179,7 @@ pub struct ItemBuilder {
     /// Vector of URL objects containing URLs for the item.
     pub urls: Option<Vec<UrlObject>>,
     /// Whether the item is marked as a favourite.
-    pub favorite: bool,
+    pub favorite: Option<bool>,
     /// A vector of strings of the tags assigned to the item.
     pub tags: Option<Vec<String>>,
     /// A vector of Field objects of the fields to include with the item.
@@ -228,7 +228,7 @@ impl ItemBuilder {
             vault,
             title: String::default(),
             category: Some(category.into()),
-            favorite: false,
+            favorite: Some(false),
             urls: None,
             tags: None,
             fields: vec![],
