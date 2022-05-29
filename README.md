@@ -4,12 +4,6 @@ The 1Password Connect Rust SDK provides your Rust applications access to the 1Pa
 
 The library can be used by Rust applications, tools, and other automations to access and manage items in 1Password Vaults.
 
-## Early draft, please wait for initial release
-
-This is an early draft and is a work in progress.  I've posted this earlier so as to setup my crate
-online.  Please wait for a proper release, which will be ready shortly; watch
-this space for further updates.
-
 ## Installation
 
 ## Usage
