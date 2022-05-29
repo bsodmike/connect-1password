@@ -25,16 +25,6 @@ pub struct VaultData {
     pub updated_at: Option<DateTime<Utc>>,
 }
 
-pub struct VaultStatus {
-    pub(crate) status: u16,
-}
-
-impl Into<StatusCode> for VaultStatus {
-    fn into(self) -> StatusCode {
-        StatusCode::try_from(self.status).unwrap()
-    }
-}
-
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct ItemData {
     /// The UUID of the item.

@@ -3,7 +3,7 @@
 use crate::error::{ConnectAPIError, Error};
 use crate::{
     client::HTTPClient,
-    models::{VaultData, VaultStatus},
+    models::{StatusWrapper, VaultData},
     *,
 };
 
@@ -21,13 +21,13 @@ pub async fn all(client: impl HTTPClient) -> Result<(Vec<VaultData>, serde_json:
 
             let message = "Invalid bearer token";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 
@@ -56,25 +56,25 @@ pub async fn get(
 
             let mut message = "Invalid bearer token";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 
             message = "Invalid Vault UUID";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 

@@ -158,13 +158,16 @@ pub struct ConnectAPIError {
     /// Error message from the API.
     pub message: String,
     /// Status code returned by the HTTP call.
-    pub status: StatusCode,
+    pub status: String,
 }
 
 impl ConnectAPIError {
     /// Create a new unsuccessful request error.
-    pub fn new(status: StatusCode, message: String) -> Self {
-        Self { status, message }
+    pub fn new(status: String, message: &str) -> Self {
+        Self {
+            status: status.to_string(),
+            message: message.to_string(),
+        }
     }
 }
 

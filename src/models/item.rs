@@ -46,6 +46,7 @@ pub struct UrlObject {
     pub primary: bool,
 }
 
+/// This is a Field Object
 #[derive(Debug, Serialize, Clone)]
 pub struct FieldObject {
     /// An object containing the UUID of a section in the item.
@@ -64,8 +65,10 @@ pub struct FieldObject {
     pub label: Option<String>,
 }
 
+/// Used to specify type of a Field Object
 #[derive(Debug)]
 pub enum FieldType {
+    /// Item value will be concealed
     Concealed,
 }
 
@@ -79,6 +82,7 @@ impl Into<String> for FieldType {
     }
 }
 
+/// This is a Section Object
 #[derive(Debug, Serialize, Clone)]
 pub struct SectionObject {
     /// The UUID of the section.
@@ -88,6 +92,7 @@ pub struct SectionObject {
 }
 
 impl SectionObject {
+    /// Create a new instance
     pub fn new(id: &str, label: &str) -> Self {
         Self {
             id: id.to_string(),
@@ -96,6 +101,7 @@ impl SectionObject {
     }
 }
 
+/// This is a SectionID
 #[derive(Debug, Serialize, Clone)]
 pub struct SectionID {
     /// The UUID of the section.
@@ -103,6 +109,7 @@ pub struct SectionID {
 }
 
 impl SectionID {
+    /// Create new instance
     pub fn new() -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
@@ -110,8 +117,7 @@ impl SectionID {
     }
 }
 
-pub struct ItemSection {}
-
+/// This is a FullItem
 #[derive(Debug, Serialize)]
 pub struct FullItem {
     /// The title of the item.
@@ -132,22 +138,33 @@ pub struct FullItem {
     pub sections: Vec<SectionObject>,
 }
 
+/// Defines a default interface
 pub trait DefaultItem {
+    /// Execute the builder
     fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
 }
 
+/// Defines an interface for a Login item
 pub trait LoginItem {
+    /// Specify title
     fn title(self, username: &str) -> Self;
+    /// Specify username
     fn username(self, username: &str) -> Self;
+    /// Specify password
     fn password(self, password: &str) -> Self;
+    /// Execute the builder
     fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
 }
 
+/// Defines an interface for a Api Credential item
 pub trait ApiCredentialItem {
+    /// Specify API key
     fn api_key(self, key: &str, title: &str) -> Self;
+    /// Execute the builder
     fn build(&self) -> Result<FullItem, Box<dyn std::error::Error + Send + Sync>>;
 }
 
+/// This is an ItemBuilder
 #[derive(Debug)]
 pub struct ItemBuilder {
     /// The title of the item.
@@ -168,10 +185,14 @@ pub struct ItemBuilder {
     pub sections: Vec<SectionObject>,
 }
 
+/// Describes usable Item categories
 #[derive(Debug)]
 pub enum ItemCategory {
+    /// API Credential
     ApiCredential,
+    /// Login
     Login,
+    /// Password
     Password,
 }
 
@@ -194,6 +215,7 @@ impl Into<String> for ItemCategory {
 }
 
 impl ItemBuilder {
+    /// Create a new instance
     pub fn new(vault_id: &str, category: ItemCategory) -> Self {
         let vault = VaultID {
             id: vault_id.to_string(),

@@ -5,7 +5,7 @@ use crate::{
     client::HTTPClient,
     models::{
         item::{FullItem, ItemBuilder, ItemData, LoginItem},
-        VaultStatus,
+        StatusWrapper,
     },
     *,
 };
@@ -29,13 +29,13 @@ pub async fn all(
 
             let message = "Invalid bearer token";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 
@@ -67,13 +67,13 @@ pub async fn add(
 
             let message = "Invalid bearer token";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 
@@ -108,13 +108,13 @@ pub async fn remove(
 
             let message = "Invalid bearer token";
             if err.to_string().contains(message) {
-                let status = VaultStatus {
+                let status = StatusWrapper {
                     status: op_error.status_code.unwrap_or_default(),
                 };
 
                 return Err(Error::new_connect_error(ConnectAPIError::new(
                     status.into(),
-                    message.to_string(),
+                    message,
                 )));
             }
 
