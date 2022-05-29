@@ -28,7 +28,7 @@ depending on the type of item you want to insert into your vault.
 use connect_1password::{
     client::Client,
     models::{
-        item::{LoginItem, FullItem, ItemBuilder},
+        item::{LoginItem, FullItem, ItemBuilder, ItemCategory},
         *,
     },
 };
@@ -39,7 +39,7 @@ let client = Client::default();
 let (vaults, _) = vaults::all(&client).await?;
 
 // Add a login item
-let item: FullItem = ItemBuilder::new("vaultUUID")
+let item: FullItem = ItemBuilder::new("vaultUUID", ItemCategory::Login)
     .title("Secure server login")
     .username(&"Bob".to_string())
     .password(&"".to_string())
