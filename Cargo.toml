@@ -1,10 +1,10 @@
 [package]
 name = "connect-1password"
-version = "2.0.1"
+version = "2.0.2"
 description = "Rust SDK for 1Password Connect"
 readme = "README.md"
-homepage = "https://github.com/bsodmike/connect-sdk-rust"
-repository = "https://github.com/bsodmike/connect-sdk-rust"
+homepage = "https://github.com/bsodmike/connect-1password"
+repository = "https://github.com/bsodmike/connect-1password"
 license = "MIT"
 authors = ["Michael de Silva <michael@inertialbox.com"]
 keywords = ["1password", "connect"]
