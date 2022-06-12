@@ -1,4 +1,4 @@
-# connect-sdk-rust
+# connect-1password
 
 [![crates.io](https://img.shields.io/crates/v/connect-1password?color=orange&label=crates.io)](https://crates.io/crates/connect-1password)
 [![Released API docs](https://img.shields.io/docsrs/connect-1password)](https://docs.rs/connect-1password/)
@@ -23,6 +23,7 @@ Refer to the [docs](https://docs.rs/connect-1password/0.1.0/connect_1password/) 
 ### Upcoming enhancements
 
 - [ ] The current goal is to cover all existing API end-points (in progress).
+- [ ] Setup Github CI with account donated by 1Password (thanks team!)
 - TBD: If you have any requests, please open an issue!
 
 ## Development
