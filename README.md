@@ -1,5 +1,8 @@
 # connect-sdk-rust
 
+[![crates.io](https://img.shields.io/crates/v/connect-1password?color=orange&label=crates.io)](https://crates.io/crates/connect-1password)
+[![Released API docs](https://img.shields.io/docsrs/connect-1password)](https://docs.rs/connect-1password/)
+
 The 1Password Connect Rust SDK provides your Rust applications access to the 1Password Connect API hosted on your infrastructure and leverage the power of 1Password Secrets Automation
 
 The library can be used by Rust applications, tools, and other automations to access and manage items in 1Password Vaults.
