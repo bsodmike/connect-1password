@@ -78,7 +78,7 @@ impl HTTPClient for Client {
             .map(|mut bytes| {
                 dbg!(&bytes);
 
-                if &bytes.len() == &0 {
+                if bytes.is_empty() {
                     bytes = hyper::body::Bytes::from("{}");
                 }
                 let json = serde_json::from_slice(&bytes).map_err(Error::new_parsing_error);

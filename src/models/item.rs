@@ -120,6 +120,12 @@ impl SectionID {
     }
 }
 
+impl Default for SectionID {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// This is a FullItem
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FullItem {

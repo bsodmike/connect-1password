@@ -70,7 +70,7 @@ impl Error {
     pub(crate) fn find_source<E: StdError + 'static>(&self) -> Option<&E> {
         let mut cause = self.source();
         while let Some(err) = cause {
-            if let Some(ref typed) = err.downcast_ref() {
+            if let Some(typed) = err.downcast_ref() {
                 return Some(typed);
             }
             cause = err.source();
@@ -167,7 +167,7 @@ impl ConnectAPIError {
     /// Create a new unsuccessful request error.
     pub fn new(status: String, message: &str) -> Self {
         Self {
-            status: status.to_string(),
+            status,
             message: message.to_string(),
         }
     }
@@ -335,7 +335,7 @@ pub fn process_connect_error_response(err_message: String) -> Result<OPError, Er
         captures
             .iter() // All the captured groups
             .skip(1) // Skipping the complete match
-            .flat_map(|c| c) // Ignoring all empty optional matches
+            .flatten() // Ignoring all empty optional matches
             .map(|c| c.as_str()) // Grab the original strings
             .collect::<Vec<_>>() // Create a vector
     });
@@ -343,7 +343,7 @@ pub fn process_connect_error_response(err_message: String) -> Result<OPError, Er
     dbg!(&captures);
 
     // Match against the captured values as a slice
-    let status_code: Option<u16> = match captures.as_ref().map(|c| c.as_slice()) {
+    let status_code: Option<u16> = match captures.as_deref() {
         Some(["StatusCode", x]) => {
             let x = x.parse().expect("can't parse number");
             Some(x)
